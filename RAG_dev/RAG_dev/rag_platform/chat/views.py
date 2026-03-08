@@ -3,12 +3,15 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, StreamingHttpResponse
 from django.views.decorators.http import require_http_methods
 from django.contrib import messages
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Avg
 import json
+import logging
 
 from .models import Conversation, Message
 from rag_platform.documents.models import Document
-from rag_platform.core.rag_engines import FaissEngine, Neo4jEngine
+from rag_platform.core.rag_engines import FaissEngine, Neo4jEngine, Neo4jUnavailableError
+
+logger = logging.getLogger(__name__)
 
 
 @login_required
@@ -159,7 +162,13 @@ def send_message(request):
         
         # Seleccionar engine (pasando el proveedor LLM seleccionado)
         if engine_choice == 'neo4j':
-            engine = Neo4jEngine(document_id=document_id, llm_provider=llm_provider)
+            try:
+                engine = Neo4jEngine(document_id=document_id, llm_provider=llm_provider)
+            except Neo4jUnavailableError as e:
+                return JsonResponse({
+                    'success': False,
+                    'error': str(e)
+                }, status=503)
         else:
             engine = FaissEngine(document_id=document_id, llm_provider=llm_provider)
         
@@ -210,11 +219,75 @@ def send_message(request):
             }
         })
         
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Formato de solicitud inválido'
+        }, status=400)
     except Exception as e:
+        logger.exception(f'Error en send_message: {e}')
         return JsonResponse({
             'success': False,
             'error': str(e)
         }, status=500)
+
+
+@login_required
+def platform_status(request):
+    """
+    Endpoint de estado de la plataforma (health check)
+    Retorna info sobre Neo4j, documentos, conversaciones, etc.
+    """
+    from django.conf import settings as s
+    
+    user = request.user
+    
+    # Estado Neo4j
+    neo4j_status = 'desconectado'
+    try:
+        from neo4j import GraphDatabase
+        driver = GraphDatabase.driver(s.NEO4J_URI, auth=(s.NEO4J_USER, s.NEO4J_PASSWORD))
+        driver.verify_connectivity()
+        with driver.session() as session:
+            result = session.run('MATCH (n:Chunk) RETURN count(n) AS total').data()
+            neo4j_nodes = result[0]['total'] if result else 0
+        driver.close()
+        neo4j_status = 'conectado'
+    except Exception:
+        neo4j_nodes = 0
+    
+    # Estadísticas del usuario
+    total_docs = Document.objects.filter(user=user).count()
+    completed_docs = Document.objects.filter(user=user, status='completed').count()
+    total_conversations = Conversation.objects.filter(user=user, is_active=True).count()
+    total_messages = Message.objects.filter(conversation__user=user).count()
+    
+    # Tiempos promedio
+    avg_times = Message.objects.filter(
+        conversation__user=user,
+        role='assistant'
+    ).aggregate(
+        avg_retrieval=Avg('retrieval_time'),
+        avg_generation=Avg('generation_time')
+    )
+    
+    return JsonResponse({
+        'status': 'ok',
+        'platform': {
+            'llm_provider': getattr(s, 'LLM_PROVIDER', 'none'),
+            'embedding_model': getattr(s, 'EMBEDDING_MODEL', 'N/A'),
+            'neo4j': neo4j_status,
+            'neo4j_nodes': neo4j_nodes,
+        },
+        'user_stats': {
+            'documents': total_docs,
+            'documents_completed': completed_docs,
+            'conversations': total_conversations,
+            'messages': total_messages,
+            'avg_retrieval_time': round(avg_times['avg_retrieval'] or 0, 3),
+            'avg_generation_time': round(avg_times['avg_generation'] or 0, 3),
+        }
+    })
 
 
 @login_required

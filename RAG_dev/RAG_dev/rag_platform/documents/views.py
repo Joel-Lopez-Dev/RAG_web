@@ -10,10 +10,8 @@ from datetime import datetime
 
 from .models import Document, DocumentChunk
 from rag_platform.core.processor import DocumentProcessor
-from rag_platform.core.rag_engines import FaissEngine, Neo4jEngine
-from rag_platform.core.neo4j_indexer import Neo4jGraphIndexer
+from rag_platform.core.rag_engines import FaissEngine
 
-from neo4j import GraphDatabase
 from django.conf import settings
 
 
@@ -159,9 +157,11 @@ def process_document_task(document_id: int, index_faiss: bool, index_neo4j: bool
                 f"document_{document_id}_faiss.pkl"
             )
         
-        # Indexar en Neo4j
+        # Indexar en Neo4j (opcional)
         if index_neo4j:
             try:
+                from neo4j import GraphDatabase
+                from rag_platform.core.neo4j_indexer import Neo4jGraphIndexer
                 driver = GraphDatabase.driver(
                     settings.NEO4J_URI,
                     auth=(settings.NEO4J_USER, settings.NEO4J_PASSWORD)
@@ -172,8 +172,8 @@ def process_document_task(document_id: int, index_faiss: bool, index_neo4j: bool
                 driver.close()
                 document.indexed_in_neo4j = True
             except Exception as e:
-                print(f"Error al indexar en Neo4j: {e}")
-                document.error_message += f"\nNeo4j: {str(e)}"
+                print(f"⚠️ Neo4j no disponible, se omite indexación en grafo: {e}")
+                document.error_message = (document.error_message or '') + f"\nNeo4j no disponible: {str(e)}"
         
         # Marcar como completado
         document.status = 'completed'

@@ -415,6 +415,11 @@ class FaissEngine(BaseRAGEngine):
             }
 
 
+class Neo4jUnavailableError(Exception):
+    """Se lanza cuando Neo4j no está disponible."""
+    pass
+
+
 class Neo4jEngine(BaseRAGEngine):
     """
     Motor RAG basado en Neo4j GraphRAG
@@ -436,8 +441,15 @@ class Neo4jEngine(BaseRAGEngine):
         user = settings.NEO4J_USER
         password = settings.NEO4J_PASSWORD
         
-        self.driver: Driver = GraphDatabase.driver(uri, auth=(user, password))
-        self._check_connection()
+        try:
+            self.driver: Driver = GraphDatabase.driver(uri, auth=(user, password))
+            self._check_connection()
+        except Exception as e:
+            raise Neo4jUnavailableError(
+                f"Neo4j no está disponible en {uri}. "
+                f"Asegúrate de que Neo4j esté corriendo (docker-compose up -d) o usa el motor FAISS. "
+                f"Error: {e}"
+            )
         
         self.prompt = PromptTemplate(
             input_variables=["context", "question", "history"],
@@ -558,7 +570,8 @@ class Neo4jEngine(BaseRAGEngine):
                 'retrieved_chunks': 0,
                 'retrieval_time': retrieval_time,
                 'generation_time': 0,
-                'engine': 'neo4j'
+                'engine': 'neo4j',
+                'llm_used': None
             }
         
         # Construir contexto
@@ -567,6 +580,34 @@ class Neo4jEngine(BaseRAGEngine):
             page = doc.metadata.get("page_number", "?")
             score = doc.metadata.get("similarity_score", 0)
             context += f"[Página {page} - Score: {score:.3f}]\n{doc.page_content}\n\n"
+        
+        # MODO SIN LLM: Devolver solo los chunks del grafo
+        if self.llm is None:
+            chunks_text = "🕸️ **MODO BÚSQUEDA EN GRAFO** (sin modelo de IA)\n\n"
+            chunks_text += f"Se encontraron {len(retrieved_docs)} nodos relevantes en el grafo:\n\n"
+            
+            for i, doc in enumerate(retrieved_docs[:5]):
+                page = doc.metadata.get("page_number", "?")
+                score = doc.metadata.get("similarity_score", 0)
+                chunks_text += f"**Nodo {i+1}** (Pág. {page}, similitud: {score:.2%})\n"
+                chunks_text += f"{doc.page_content.strip()}\n\n"
+            
+            return {
+                'response': chunks_text,
+                'retrieved_chunks': len(retrieved_docs),
+                'retrieval_time': retrieval_time,
+                'generation_time': 0,
+                'engine': 'neo4j',
+                'llm_used': None,
+                'chunks_info': [
+                    {
+                        'page': doc.metadata.get('page_number'),
+                        'score': doc.metadata.get('similarity_score'),
+                        'text_preview': doc.page_content[:100]
+                    }
+                    for doc in retrieved_docs[:5]
+                ]
+            }
         
         # Historial
         history_text = ""
@@ -583,26 +624,56 @@ class Neo4jEngine(BaseRAGEngine):
         )
         
         # Llamada al LLM
-        start_generation = time.time()
-        messages = [{"role": "user", "content": formatted_prompt}]
-        response = self.llm.invoke(messages)
-        generation_time = time.time() - start_generation
-        
-        return {
-            'response': response.content,
-            'retrieved_chunks': len(retrieved_docs),
-            'retrieval_time': retrieval_time,
-            'generation_time': generation_time,
-            'engine': 'neo4j',
-            'chunks_info': [
-                {
-                    'page': doc.metadata.get('page_number'),
-                    'score': doc.metadata.get('similarity_score'),
-                    'text_preview': doc.page_content[:100]
-                }
-                for doc in retrieved_docs[:3]
-            ]
-        }
+        try:
+            start_generation = time.time()
+            messages = [{"role": "user", "content": formatted_prompt}]
+            response = self.llm.invoke(messages)
+            generation_time = time.time() - start_generation
+            
+            # Determinar qué LLM se usó
+            llm_name = type(self.llm).__name__
+            if 'Google' in llm_name:
+                llm_used = 'gemini'
+            elif 'OpenAI' in llm_name:
+                llm_used = 'openai'
+            else:
+                llm_used = 'unknown'
+            
+            return {
+                'response': response.content,
+                'retrieved_chunks': len(retrieved_docs),
+                'retrieval_time': retrieval_time,
+                'generation_time': generation_time,
+                'engine': 'neo4j',
+                'llm_used': llm_used,
+                'chunks_info': [
+                    {
+                        'page': doc.metadata.get('page_number'),
+                        'score': doc.metadata.get('similarity_score'),
+                        'text_preview': doc.page_content[:100]
+                    }
+                    for doc in retrieved_docs[:3]
+                ]
+            }
+        except Exception as e:
+            # Error de API: devolver chunks como fallback
+            error_msg = str(e)
+            fallback_response = f"⚠️ **Error al conectar con el modelo de IA:**\n`{error_msg[:200]}`\n\n"
+            fallback_response += "---\n🕸️ **Información encontrada en el grafo:**\n\n"
+            
+            for i, doc in enumerate(retrieved_docs[:3]):
+                page = doc.metadata.get("page_number", "?")
+                fallback_response += f"**Nodo {i+1}** (Pág. {page})\n{doc.page_content.strip()}\n\n"
+            
+            return {
+                'response': fallback_response,
+                'retrieved_chunks': len(retrieved_docs),
+                'retrieval_time': retrieval_time,
+                'generation_time': 0,
+                'engine': 'neo4j',
+                'llm_used': 'error',
+                'error': error_msg
+            }
     
     def close(self):
         """Cierra la conexión a Neo4j"""

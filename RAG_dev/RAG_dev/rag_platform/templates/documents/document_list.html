@@ -5,22 +5,22 @@
 {% block content %}
 <div class="mb-6 flex justify-between items-center">
     <div>
-        <h1 class="text-3xl font-bold text-gray-900">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
             <i class="fas fa-file-pdf text-red-500 mr-2"></i>
             Mis Documentos
         </h1>
-        <p class="mt-2 text-gray-600">Gestiona tus documentos PDF/TXT para análisis RAG</p>
+        <p class="mt-2 text-gray-600 dark:text-gray-400">Gestiona tus documentos PDF/TXT para análisis RAG</p>
     </div>
     <a 
         href="{% url 'documents:upload' %}"
-        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition duration-200"
+        class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg transition duration-200 shadow-md"
     >
         <i class="fas fa-upload mr-2"></i> Subir Documento
     </a>
 </div>
 
 <!-- Filtros -->
-<div class="bg-white rounded-lg shadow-md p-4 mb-6">
+<div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg dark:shadow-slate-900/50 p-4 mb-6 border border-gray-100 dark:border-slate-700">
     <div class="flex flex-wrap gap-2">
         <a href="{% url 'documents:list' %}" class="px-4 py-2 rounded-lg {% if not status_filter %}bg-blue-600 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}">
             Todos
@@ -40,14 +40,14 @@
 <!-- Lista de documentos -->
 <div class="grid gap-4">
     {% for document in page_obj %}
-    <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition duration-200">
+    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg dark:shadow-slate-900/50 p-6 hover:shadow-xl transition duration-200 border border-gray-100 dark:border-slate-700">
         <div class="flex items-center justify-between">
             <div class="flex-1">
                 <div class="flex items-center space-x-3 mb-2">
                     <i class="fas fa-file-pdf text-red-500 text-2xl"></i>
                     <div>
-                        <h3 class="text-lg font-bold text-gray-900">{{ document.title }}</h3>
-                        <p class="text-sm text-gray-500">
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">{{ document.title }}</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
                             {{ document.author }} • {{ document.year|default:"Sin año" }} • {{ document.get_file_size_mb }} MB
                         </p>
                     </div>
@@ -70,7 +70,7 @@
                     </span>
                     {% endif %}
                     
-                    <span class="text-gray-600">
+                    <span class="text-gray-600 dark:text-gray-400">
                         {{ document.total_chunks }} chunks
                     </span>
                 </div>
@@ -95,9 +95,9 @@
         </div>
     </div>
     {% empty %}
-    <div class="bg-white rounded-lg shadow-md p-12 text-center">
-        <i class="fas fa-folder-open text-gray-300 text-6xl mb-4"></i>
-        <p class="text-xl text-gray-500">No hay documentos aún</p>
+    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-12 text-center border border-gray-100 dark:border-slate-700">
+        <i class="fas fa-folder-open text-gray-300 dark:text-slate-600 text-6xl mb-4"></i>
+        <p class="text-xl text-gray-500 dark:text-gray-400">No hay documentos aún</p>
         <a 
             href="{% url 'documents:upload' %}"
             class="inline-block mt-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg"

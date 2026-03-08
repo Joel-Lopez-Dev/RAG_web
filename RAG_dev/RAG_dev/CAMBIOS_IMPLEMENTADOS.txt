@@ -1,0 +1,300 @@
+================================================================================
+        CAMBIOS IMPLEMENTADOS EN RAG PLATFORM - 4 de marzo de 2026
+================================================================================
+
+Este documento describe de forma detallada todos los cambios realizados en el
+proyecto RAG Platform, organizados por categoría.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ PARTE 1: MEJORAS EN EL BACKEND (Lógica del servidor)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ARCHIVO: rag_platform/core/rag_engines.py
+─────────────────────────────────────────
+
+¿Qué es este archivo?
+  Este archivo contiene los "motores" de búsqueda RAG. Son las piezas de código
+  que se encargan de buscar información en los documentos y generar respuestas
+  usando inteligencia artificial (OpenAI GPT-4o o Google Gemini).
+
+¿Qué se cambió?
+
+  1) MODO "SIN INTELIGENCIA ARTIFICIAL" PARA NEO4J
+     Antes: Si el usuario seleccionaba "Sin IA" como modelo, el motor Neo4j
+     intentaba llamar al modelo de IA de todas formas y se producía un error
+     porque no había ningún modelo configurado.
+
+     Ahora: Cuando el usuario elige "Sin IA", el motor Neo4j busca los
+     fragmentos relevantes en el grafo de conocimiento y los devuelve
+     directamente al usuario, sin intentar generar una respuesta con IA.
+     El usuario ve los textos originales encontrados en los documentos.
+
+  2) PROTECCIÓN CONTRA ERRORES DEL MODELO DE IA
+     Antes: Si el modelo de IA fallaba por cualquier razón (por ejemplo,
+     la API de OpenAI no responde, o se agotó la cuota), la aplicación
+     mostraba un error genérico.
+
+     Ahora: Si el modelo falla, en lugar de mostrar un error, el sistema
+     devuelve los fragmentos de texto que sí encontró, junto con un aviso
+     de que la IA no pudo generar una respuesta completa. Así el usuario
+     al menos ve la información relevante.
+
+  3) SEGUIMIENTO DEL MODELO USADO
+     Se agregó un campo "llm_used" en la respuesta para que la interfaz
+     pueda mostrar qué modelo de IA se utilizó (OpenAI, Gemini, ninguno).
+
+
+ARCHIVO: rag_platform/chat/views.py
+────────────────────────────────────
+
+¿Qué es este archivo?
+  Este archivo maneja las "vistas" del chat, es decir, la lógica que se ejecuta
+  cuando el usuario envía un mensaje, carga una conversación, etc.
+
+¿Qué se cambió?
+
+  1) REGISTRO DE ERRORES (LOGGING)
+     Antes: Si ocurría un error interno, no se guardaba registro de qué
+     pasó exactamente, lo que dificultaba encontrar problemas.
+
+     Ahora: Se agregó un sistema de logging (registro) que guarda en la
+     consola del servidor información detallada cuando ocurre un error.
+     Esto ayuda a los desarrolladores a diagnosticar problemas rápidamente.
+
+  2) MEJOR MANEJO DE ERRORES EN MENSAJES
+     Antes: Si el navegador enviaba datos mal formados (JSON inválido),
+     el servidor podía producir un error no controlado.
+
+     Ahora: Se detecta específicamente si los datos enviados están mal
+     formados y se devuelve un mensaje de error claro: "JSON inválido
+     en el body del request".
+
+  3) NUEVO ENDPOINT DE ESTADO DE LA PLATAFORMA
+     Se creó una nueva página accesible en /chat/status/ que muestra
+     información sobre el estado del sistema:
+       - Si Neo4j (base de datos de grafos) está conectado y funcionando
+       - Cuántos usuarios hay registrados
+       - Tiempos promedio de recuperación y generación de respuestas
+
+     Esto es útil para que los administradores puedan verificar rápidamente
+     si todo está funcionando correctamente.
+
+
+ARCHIVO: rag_platform/chat/urls.py
+──────────────────────────────────
+
+¿Qué es este archivo?
+  Este archivo define las "rutas" o URLs del módulo de chat, es decir,
+  qué dirección web corresponde a cada funcionalidad.
+
+¿Qué se cambió?
+  Se agregó la ruta /chat/status/ que apunta a la nueva vista de estado
+  de la plataforma descrita arriba.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ PARTE 2: MODO OSCURO (Dark Mode)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+¿Qué es el modo oscuro?
+  Es una opción visual que cambia los colores de la interfaz de fondos claros
+  (blancos y grises) a fondos oscuros (azul oscuro / gris oscuro). Reduce la
+  fatiga visual, especialmente de noche, y es una preferencia muy común en
+  aplicaciones modernas.
+
+¿Cómo funciona?
+  - En la barra de navegación superior aparece un nuevo botón con un ícono
+    de luna (🌙). Al hacer clic, cambia a modo oscuro y el ícono cambia a
+    un sol (☀️).
+  - La preferencia se guarda automáticamente en el navegador (localStorage),
+    así que si cierras y vuelves a abrir la página, se mantiene tu elección.
+  - Si es la primera vez que entras, el sistema detecta si tu sistema
+    operativo está en modo oscuro y lo aplica automáticamente.
+  - El cambio entre modos tiene una transición suave (animación de 0.3s)
+    para que no sea un cambio brusco.
+
+
+ARCHIVOS MODIFICADOS PARA EL MODO OSCURO:
+──────────────────────────────────────────
+
+ARCHIVO: rag_platform/templates/base.html (PLANTILLA BASE)
+  ¿Qué es? La plantilla "madre" de la que heredan casi todas las páginas.
+  Contiene la barra de navegación, el pie de página y los estilos generales.
+
+  Cambios realizados:
+  - Se configuró Tailwind CSS para soportar modo oscuro por clase CSS
+  - Se agregó la fuente "Inter" de Google Fonts para mejor legibilidad
+  - Se añadió un script que detecta el tema antes de que la página se
+    pinte, evitando un "flash" blanco al cargar
+  - La barra de navegación ahora tiene un gradiente oscuro profesional
+    (azul marino) en lugar del blanco anterior
+  - Se reemplazó el ícono genérico de usuario por un avatar circular
+    con la inicial del nombre del usuario
+  - Se agregó un indicador verde "Online" en la barra de navegación
+  - Se añadió el botón de cambio de tema (luna/sol)
+  - El menú desplegable del usuario ahora tiene colores oscuros en
+    modo oscuro
+  - Las alertas/notificaciones ahora tienen un botón "X" para cerrarlas
+    manualmente, además del auto-cierre a los 5 segundos
+  - El pie de página cambia sus colores según el modo
+  - Se añadieron estilos personalizados para la barra de scroll en
+    modo oscuro
+
+
+ARCHIVO: rag_platform/templates/accounts/landing.html (PÁGINA DE INICIO)
+  ¿Qué es? La primera página que ve un usuario no registrado.
+
+  Cambios realizados:
+  - Se agregó su propio botón de cambio de tema (esquina superior derecha)
+    porque esta página no hereda de base.html
+  - El fondo degradado cambia entre tonos azul claro (modo claro) y
+    azul marino/índigo (modo oscuro)
+  - El ícono del cerebro ahora está dentro de un cuadrado redondeado azul
+  - Los textos cambian de color según el modo
+  - Las tarjetas de características tienen efecto de elevación al pasar
+    el cursor y fondo oscuro en modo oscuro
+  - La sección de tecnologías tiene fondo y hover adaptados
+
+
+ARCHIVO: rag_platform/templates/accounts/login.html (INICIO DE SESIÓN)
+  Cambios: Fondo degradado oscuro, tarjeta del formulario con fondo slate,
+  campos de texto con fondo y bordes oscuros, textos y enlaces adaptados.
+
+
+ARCHIVO: rag_platform/templates/accounts/register.html (REGISTRO)
+  Cambios: Mismas adaptaciones que login.html - fondo, tarjeta, campos
+  de entrada y textos adaptativos al modo oscuro.
+
+
+ARCHIVO: rag_platform/templates/accounts/profile.html (PERFIL DE USUARIO)
+  Cambios: Tarjeta de perfil con fondo oscuro, todos los campos de
+  formulario (nombre, apellido, email, biografía, motor preferido) con
+  colores adaptados, botón de guardar con variante oscura.
+
+
+ARCHIVO: rag_platform/templates/chat/dashboard.html (PANEL PRINCIPAL DEL CHAT)
+  ¿Qué es? La página principal donde el usuario chatea con los documentos.
+
+  Cambios realizados:
+  - La barra lateral de conversaciones tiene fondo oscuro
+  - Las conversaciones seleccionadas se resaltan con azul oscuro
+  - Los mensajes del asistente (burbujas grises) ahora tienen fondo
+    slate-700 en modo oscuro con texto claro
+  - Los mensajes vacíos ("Escribe tu pregunta...") tienen texto adaptado
+  - La metadata de los mensajes (motor usado, tiempos) es legible en
+    ambos modos
+  - Las burbujas de chat ahora son más redondeadas (rounded-2xl) con
+    sombra sutil para un aspecto más moderno
+
+
+ARCHIVO: rag_platform/templates/chat/conversation_detail.html (DETALLE DE CONVERSACIÓN)
+  Cambios realizados:
+  - El fondo tipo "WhatsApp" (degradado azul claro) cambia a un degradado
+    oscuro (slate-900 a slate-800) en modo oscuro
+  - Las burbujas del asistente cambian su fondo y color de texto
+  - Los selectores de motor, modelo IA y documento tienen fondo y borde
+    oscuros
+  - El área de input y botón de enviar se adaptan al modo
+  - La metadata de los mensajes es legible en ambos modos
+
+
+ARCHIVO: rag_platform/templates/chat/conversation_history.html (HISTORIAL)
+  Cambios: Buscador y filtros con fondos oscuros, tarjetas de conversación
+  con bordes y sombras adaptadas, sección "último mensaje" con fondo
+  adecuado, estado vacío con colores oscuros.
+
+
+ARCHIVO: rag_platform/templates/documents/document_list.html (LISTA DE DOCUMENTOS)
+  Cambios: Título y descripción con colores adaptados, filtros y tarjetas
+  de documentos con fondo oscuro, información de chunks y estado de
+  indexación legible en ambos modos.
+
+
+ARCHIVO: rag_platform/templates/documents/document_upload.html (SUBIR DOCUMENTO)
+  Cambios: Zona de arrastrar y soltar archivos con fondo oscuro y borde
+  adaptado, opciones de indexación con texto claro, alerta informativa
+  con fondo azul oscuro, botones y enlaces adaptados.
+
+
+ARCHIVO: rag_platform/templates/documents/document_detail.html (DETALLE DE DOCUMENTO)
+  Cambios: Información del documento, estado, chunks y páginas con
+  fondos slate en modo oscuro, sección de re-indexación adaptada.
+
+
+ARCHIVO: rag_platform/templates/documents/document_chunks.html (CHUNKS DEL DOCUMENTO)
+  Cambios: Tarjetas de chunks con fondo oscuro, texto de contenido
+  legible, información de página y sección con colores adaptados.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ PARTE 3: MEJORAS VISUALES GENERALES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Además del modo oscuro, se realizaron mejoras visuales que aplican en
+ambos modos (claro y oscuro):
+
+  1) TARJETAS MÁS MODERNAS
+     Todas las tarjetas (cards) del sistema ahora usan esquinas más
+     redondeadas (rounded-xl en lugar de rounded-lg) y sombras más
+     pronunciadas con bordes sutiles, dando un aspecto más pulido.
+
+  2) BURBUJAS DE CHAT MEJORADAS
+     Las burbujas de los mensajes ahora son más redondeadas (rounded-2xl)
+     con una sombra suave, similar al estilo de aplicaciones de chat
+     modernas como WhatsApp o Telegram.
+
+  3) BARRA DE NAVEGACIÓN REDISEÑADA
+     - Gradiente oscuro profesional (azul marino) en lugar de fondo blanco
+     - Avatar circular con la inicial del usuario
+     - Indicador de estado "Online"
+     - Botón de tema integrado
+     - Efectos hover con fondo semi-transparente
+
+  4) TIPOGRAFÍA MEJORADA
+     Se cambió la fuente predeterminada a "Inter", una fuente diseñada
+     específicamente para interfaces de usuario, con mejor legibilidad
+     en pantallas.
+
+  5) EFECTOS DE INTERACCIÓN
+     - Las tarjetas de características en la landing page se elevan
+       ligeramente al pasar el cursor (hover:-translate-y-1)
+     - Los botones tienen sombras que se intensifican al pasar el cursor
+     - Las transiciones entre estados son suaves (0.2-0.3 segundos)
+
+  6) ALERTAS/NOTIFICACIONES MEJORADAS
+     - Ahora tienen un botón "X" para cerrarlas manualmente
+     - La animación de desaparición automática incluye un desplazamiento
+       hacia arriba además del desvanecimiento
+     - Los colores son más sutiles (fondos semi-transparentes) en lugar
+       de colores sólidos
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ RESUMEN DE ARCHIVOS MODIFICADOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Backend (3 archivos):
+    - rag_platform/core/rag_engines.py
+    - rag_platform/chat/views.py
+    - rag_platform/chat/urls.py
+
+  Frontend / Plantillas (11 archivos):
+    - rag_platform/templates/base.html
+    - rag_platform/templates/accounts/landing.html
+    - rag_platform/templates/accounts/login.html
+    - rag_platform/templates/accounts/register.html
+    - rag_platform/templates/accounts/profile.html
+    - rag_platform/templates/chat/dashboard.html
+    - rag_platform/templates/chat/conversation_detail.html
+    - rag_platform/templates/chat/conversation_history.html
+    - rag_platform/templates/documents/document_list.html
+    - rag_platform/templates/documents/document_upload.html
+    - rag_platform/templates/documents/document_detail.html
+    - rag_platform/templates/documents/document_chunks.html
+
+  TOTAL: 14 archivos modificados
+
+================================================================================
+  Documento generado el 4 de marzo de 2026
+================================================================================

@@ -6,16 +6,16 @@
 <div class="grid grid-cols-12 gap-6">
     
     <!-- Sidebar - Historial -->
-    <div class="col-span-12 md:col-span-3 bg-white rounded-lg shadow-md p-4 max-h-screen overflow-y-auto">
+    <div class="col-span-12 md:col-span-3 bg-white dark:bg-slate-800 rounded-xl shadow-lg dark:shadow-slate-900/50 p-4 max-h-screen overflow-y-auto border border-gray-100 dark:border-slate-700">
         <div class="mb-4">
-            <a href="{% url 'chat:dashboard' %}" class="text-blue-600 hover:text-blue-700 text-sm">
+            <a href="{% url 'chat:dashboard' %}" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm">
                 <i class="fas fa-arrow-left mr-1"></i> Volver al Dashboard
             </a>
         </div>
         
         <div class="mb-4">
-            <h3 class="text-lg font-bold text-gray-900">{{ conversation.title }}</h3>
-            <p class="text-xs text-gray-500 mt-1">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">{{ conversation.title }}</h3>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 {% if conversation.engine_used == 'faiss' %}
                 <i class="fas fa-search text-blue-500"></i> FAISS
                 {% else %}
@@ -31,11 +31,14 @@
         .whatsapp-bg {
             background: linear-gradient(135deg, #e3f0ff 0%, #b3d8ff 100%);
         }
+        .dark .whatsapp-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
         .chat-bubble-user {
             background: #1976d2;
             color: #fff;
             border-radius: 18px 18px 4px 18px;
-            box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
+            box-shadow: 0 2px 8px rgba(25, 118, 210, 0.15);
             margin-left: 48px;
             position: relative;
         }
@@ -43,9 +46,13 @@
             background: #f1f7ff;
             color: #222;
             border-radius: 18px 18px 18px 4px;
-            box-shadow: 0 2px 8px rgba(25, 118, 210, 0.04);
+            box-shadow: 0 2px 8px rgba(25, 118, 210, 0.06);
             margin-right: 48px;
             position: relative;
+        }
+        .dark .chat-bubble-assistant {
+            background: #334155;
+            color: #e2e8f0;
         }
         .chat-avatar {
             width: 36px;
@@ -72,9 +79,12 @@
             color: #90a4ae;
             text-align: left;
         }
+        .dark .chat-meta.assistant {
+            color: #94a3b8;
+        }
     </style>
 
-    <div class="col-span-12 md:col-span-9 whatsapp-bg rounded-lg shadow-md flex flex-col" style="height: calc(100vh - 150px);">
+    <div class="col-span-12 md:col-span-9 whatsapp-bg rounded-xl shadow-lg dark:shadow-slate-900/50 flex flex-col border border-gray-100 dark:border-slate-700" style="height: calc(100vh - 150px);">
             <!-- Messages -->
             <div id="messages-container" class="flex-1 overflow-y-auto p-6">
                     {% for message in messages %}
@@ -100,12 +110,12 @@
             </div>
 
             <!-- Input -->
-            <div class="border-t border-gray-200 p-4 bg-white">
+            <div class="border-t border-gray-200 dark:border-slate-700 p-4 bg-white dark:bg-slate-800">
             <div class="flex flex-wrap items-center gap-2 mb-3">
                 <!-- Selector de Motor de Búsqueda -->
                 <div class="flex items-center">
-                    <label class="text-xs text-gray-500 mr-1">Búsqueda:</label>
-                    <select id="engine-selector" class="px-3 py-1 border border-gray-300 rounded text-sm bg-white">
+                    <label class="text-xs text-gray-500 dark:text-gray-400 mr-1">Búsqueda:</label>
+                    <select id="engine-selector" class="px-3 py-1 border border-gray-300 dark:border-slate-600 rounded text-sm bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100">
                         <option value="faiss" {% if conversation.engine_used == 'faiss' %}selected{% endif %}>🔍 Naive (Vector)</option>
                         <option value="neo4j" {% if conversation.engine_used == 'neo4j' %}selected{% endif %}>🕸️ Graph (Grafo)</option>
                     </select>
@@ -113,8 +123,8 @@
                 
                 <!-- NUEVO: Selector de Modelo IA -->
                 <div class="flex items-center">
-                    <label class="text-xs text-gray-500 mr-1">Modelo IA:</label>
-                    <select id="llm-provider-selector" class="px-3 py-1 border border-gray-300 rounded text-sm bg-white">
+                    <label class="text-xs text-gray-500 dark:text-gray-400 mr-1">Modelo IA:</label>
+                    <select id="llm-provider-selector" class="px-3 py-1 border border-gray-300 dark:border-slate-600 rounded text-sm bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100">
                         <option value="">🔧 Por defecto (.env)</option>
                         <option value="openai">🤖 OpenAI (GPT-4o)</option>
                         <option value="gemini">✨ Google Gemini</option>
@@ -124,8 +134,8 @@
                 
                 <!-- Selector de Documento -->
                 <div class="flex items-center">
-                    <label class="text-xs text-gray-500 mr-1">Documento:</label>
-                    <select id="document-selector" class="px-3 py-1 border border-gray-300 rounded text-sm bg-white">
+                    <label class="text-xs text-gray-500 dark:text-gray-400 mr-1">Documento:</label>
+                    <select id="document-selector" class="px-3 py-1 border border-gray-300 dark:border-slate-600 rounded text-sm bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100">
                         <option value="">📄 Todos</option>
                         {% for doc in documents %}
                         <option value="{{ doc.id }}">{{ doc.title|truncatechars:30 }}</option>
@@ -139,19 +149,19 @@
                     type="text"
                     id="message-input"
                     placeholder="Escribe tu pregunta..."
-                    class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    class="flex-1 px-4 py-3 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500"
                     required
                 >
                 <button 
                     type="submit"
                     id="send-btn"
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg"
+                    class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition shadow-md"
                 >
                     <i class="fas fa-paper-plane"></i>
                 </button>
             </form>
             
-            <div id="loading" class="hidden mt-2 text-sm text-gray-500">
+            <div id="loading" class="hidden mt-2 text-sm text-gray-500 dark:text-gray-400">
                 <i class="fas fa-spinner fa-spin mr-2"></i> Procesando...
             </div>
         </div>
@@ -223,15 +233,17 @@ function addMessage(role, content, metadata = {}) {
     div.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'}`;
     
     const bubble = document.createElement('div');
-    bubble.className = `max-w-2xl px-4 py-3 rounded-lg ${
-        role === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-900'
+    bubble.className = `max-w-2xl px-4 py-3 rounded-2xl shadow-sm ${
+        role === 'user' 
+            ? 'bg-blue-600 text-white' 
+            : 'bg-gray-100 dark:bg-slate-700 text-gray-900 dark:text-gray-100'
     }`;
     
     let metaInfo = '';
     if (metadata.engine) {
         const llmUsed = metadata.llm_used || 'Sin IA';
         const llmLabel = llmUsed === 'none' ? 'Solo búsqueda' : llmUsed;
-        metaInfo = `<div class="text-xs mt-2 ${role === 'user' ? 'text-blue-200' : 'text-gray-500'}">
+        metaInfo = `<div class="text-xs mt-2 ${role === 'user' ? 'text-blue-200' : 'text-gray-500 dark:text-gray-400'}">
             <i class="fas ${metadata.engine === 'faiss' ? 'fa-search' : 'fa-project-diagram'} mr-1"></i>
             ${metadata.engine.toUpperCase()} | 
             <i class="fas fa-robot mr-1"></i>${llmLabel} |

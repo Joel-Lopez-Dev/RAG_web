@@ -36,28 +36,28 @@ class Neo4jGraphIndexer:
             except Exception as e:
                 logging.info(f"Constraint ya existe o no soportado: {e}")
     
-        def _setup_vector_index(self):
-                """Crea índice vectorial para búsquedas por embedding"""
-                if self.embedder is None:
-                        logging.warning("No se proporcionó embedder, no se crea índice vectorial.")
-                        return
-                sample_embedding = self.embedder.embed_query("test")
-                vector_dim = len(sample_embedding)
-                query = f"""
-                CREATE VECTOR INDEX chunk_embeddings IF NOT EXISTS
-                FOR (c:Chunk) ON (c.embedding)
-                OPTIONS {{
-                    indexConfig: {{
-                        `vector.dimensions`: {vector_dim},
-                        `vector.similarity_function`: 'cosine'
-                    }}
-                }}
-                """
-                with self.driver.session() as session:
-                        try:
-                                session.run(query)
-                        except Exception as e:
-                                logging.info(f"Vector index ya existe o no soportado: {e}")
+    def _setup_vector_index(self):
+        """Crea índice vectorial para búsquedas por embedding"""
+        if self.embedder is None:
+            logging.warning("No se proporcionó embedder, no se crea índice vectorial.")
+            return
+        sample_embedding = self.embedder.embed_query("test")
+        vector_dim = len(sample_embedding)
+        query = f"""
+        CREATE VECTOR INDEX chunk_embeddings IF NOT EXISTS
+        FOR (c:Chunk) ON (c.embedding)
+        OPTIONS {{
+            indexConfig: {{
+                `vector.dimensions`: {vector_dim},
+                `vector.similarity_function`: 'cosine'
+            }}
+        }}
+        """
+        with self.driver.session() as session:
+            try:
+                session.run(query)
+            except Exception as e:
+                logging.info(f"Vector index ya existe o no soportado: {e}")
     
     def index_chunks(self, chunks_data: List[Dict], document_id: int, threshold: float = 0.75, top_k: int = 5):
         """Indexa chunks en Neo4j con relaciones de similitud"""

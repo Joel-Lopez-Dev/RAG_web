@@ -4,16 +4,16 @@
 
 {% block content %}
 <div class="mb-6">
-    <a href="{% url 'documents:list' %}" class="text-blue-600 hover:text-blue-700">
+    <a href="{% url 'documents:list' %}" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
         <i class="fas fa-arrow-left mr-1"></i> Volver a Documentos
     </a>
 </div>
 
-<div class="bg-white rounded-lg shadow-md p-6 mb-6">
+<div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg dark:shadow-slate-900/50 p-6 mb-6 border border-gray-100 dark:border-slate-700">
     <div class="flex items-start justify-between mb-6">
         <div class="flex-1">
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ document.title }}</h1>
-            <div class="flex items-center space-x-4 text-sm text-gray-600">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">{{ document.title }}</h1>
+            <div class="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
                 <span><i class="fas fa-user mr-1"></i> {{ document.author }}</span>
                 <span><i class="fas fa-calendar mr-1"></i> {{ document.year|default:"Sin año" }}</span>
                 <span><i class="fas fa-file mr-1"></i> {{ document.file_type|upper }}</span>
@@ -42,8 +42,8 @@
     
     <!-- Estado -->
     <div class="grid md:grid-cols-3 gap-4 mb-6">
-        <div class="bg-gray-50 rounded-lg p-4">
-            <div class="text-sm text-gray-600 mb-1">Estado</div>
+        <div class="bg-gray-50 dark:bg-slate-700/50 rounded-lg p-4">
+            <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Estado</div>
             <div class="text-lg font-semibold">
                 <span class="px-3 py-1 rounded-full {% if document.status == 'completed' %}bg-green-100 text-green-800{% elif document.status == 'processing' %}bg-yellow-100 text-yellow-800{% elif document.status == 'failed' %}bg-red-100 text-red-800{% else %}bg-gray-100 text-gray-800{% endif %}">
                     {{ document.get_status_display }}
@@ -51,20 +51,20 @@
             </div>
         </div>
         
-        <div class="bg-gray-50 rounded-lg p-4">
-            <div class="text-sm text-gray-600 mb-1">Total de Chunks</div>
-            <div class="text-2xl font-bold text-gray-900">{{ document.total_chunks }}</div>
+        <div class="bg-gray-50 dark:bg-slate-700/50 rounded-lg p-4">
+            <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Total de Chunks</div>
+            <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ document.total_chunks }}</div>
         </div>
         
-        <div class="bg-gray-50 rounded-lg p-4">
-            <div class="text-sm text-gray-600 mb-1">Páginas</div>
-            <div class="text-2xl font-bold text-gray-900">{{ document.total_pages|default:"N/A" }}</div>
+        <div class="bg-gray-50 dark:bg-slate-700/50 rounded-lg p-4">
+            <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Páginas</div>
+            <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ document.total_pages|default:"N/A" }}</div>
         </div>
     </div>
     
     <!-- Indexación -->
     <div class="mb-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-3">Indexación</h3>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Indexación</h3>
         <div class="flex items-center space-x-6">
             <div class="flex items-center">
                 {% if document.indexed_in_faiss %}
@@ -115,7 +115,7 @@
     {% endif %}
     
     <!-- Fechas -->
-    <div class="text-sm text-gray-500 pt-4 border-t border-gray-200">
+    <div class="text-sm text-gray-500 dark:text-gray-400 pt-4 border-t border-gray-200 dark:border-slate-700">
         <p>Subido: {{ document.created_at|date:"d/m/Y H:i" }}</p>
         {% if document.processed_at %}
         <p>Procesado: {{ document.processed_at|date:"d/m/Y H:i" }}</p>
@@ -124,8 +124,8 @@
 </div>
 
 <!-- Re-indexar -->
-<div class="bg-white rounded-lg shadow-md p-6">
-    <h3 class="text-lg font-semibold text-gray-900 mb-3">Re-indexar Documento</h3>
+<div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg dark:shadow-slate-900/50 p-6 border border-gray-100 dark:border-slate-700">
+    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Re-indexar Documento</h3>
     <form method="post" action="{% url 'documents:reindex' document.id %}">
         {% csrf_token %}
         <div class="flex items-center space-x-4 mb-4">
