@@ -4,34 +4,121 @@
 
 {% block main_class %}max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4{% endblock %}
 
+{% block extra_css %}
+<style>
+    html:not(.dark) body {
+        background:
+            radial-gradient(circle at top left, rgba(10, 61, 102, 0.08), transparent 30%),
+            radial-gradient(circle at top right, rgba(200, 162, 78, 0.10), transparent 28%),
+            linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+    }
+
+    html:not(.dark) .chat-shell {
+        background: linear-gradient(180deg, #ffffff 0%, #f4f8fd 100%);
+        border: 1px solid rgba(10, 61, 102, 0.12);
+        box-shadow: 0 18px 40px rgba(10, 61, 102, 0.10);
+    }
+
+    html:not(.dark) .chat-sidebar {
+        background: linear-gradient(180deg, #ffffff 0%, #f3f8fe 100%);
+        border: 1px solid rgba(10, 61, 102, 0.10);
+        box-shadow: 0 14px 32px rgba(10, 61, 102, 0.09);
+    }
+
+    html:not(.dark) .chat-main {
+        background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+        border: 1px solid rgba(10, 61, 102, 0.10);
+        box-shadow: 0 14px 32px rgba(10, 61, 102, 0.09);
+    }
+
+    html:not(.dark) .chat-header {
+        background: linear-gradient(90deg, rgba(10, 61, 102, 0.06) 0%, rgba(200, 162, 78, 0.06) 100%);
+        border-bottom: 1px solid rgba(10, 61, 102, 0.12);
+    }
+
+    html:not(.dark) .chat-input {
+        background: linear-gradient(180deg, #ffffff 0%, #f5f9fe 100%);
+        border-top: 1px solid rgba(10, 61, 102, 0.12);
+    }
+
+    html:not(.dark) .chat-title {
+        color: #0a3d66;
+    }
+
+    html:not(.dark) .chat-title i,
+    html:not(.dark) .section-label,
+    html:not(.dark) .conversation-engine,
+    html:not(.dark) .chat-subtitle {
+        color: #1d5a8d;
+    }
+
+    html:not(.dark) .primary-btn {
+        background: linear-gradient(180deg, #0a4b80 0%, #08375d 100%);
+        box-shadow: 0 10px 24px rgba(10, 61, 102, 0.22);
+    }
+
+    html:not(.dark) .primary-btn:hover {
+        background: linear-gradient(180deg, #0c568f 0%, #0a3d66 100%);
+    }
+
+    html:not(.dark) .selector {
+        border-color: rgba(10, 61, 102, 0.18);
+        background: rgba(255, 255, 255, 0.94);
+        color: #0a3d66;
+    }
+
+    html:not(.dark) .selector:focus {
+        box-shadow: 0 0 0 2px rgba(10, 61, 102, 0.16);
+        border-color: rgba(10, 61, 102, 0.28);
+    }
+
+    html:not(.dark) .messages-empty {
+        color: #2a4f75;
+    }
+
+    html:not(.dark) .messages-empty i {
+        color: rgba(10, 61, 102, 0.16);
+    }
+
+    html:not(.dark) .sidebar-item.active {
+        background: linear-gradient(90deg, rgba(10, 61, 102, 0.10) 0%, rgba(200, 162, 78, 0.10) 100%);
+        border-left: 4px solid #0a3d66;
+    }
+
+    html:not(.dark) .sidebar-item:hover {
+        background: rgba(10, 61, 102, 0.06);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="grid grid-cols-12 gap-6" style="height: calc(100vh - 180px);">
+<div class="grid grid-cols-12 gap-6 chat-shell rounded-2xl p-4 md:p-5" style="height: calc(100vh - 180px);">
     
     <!-- Sidebar - Historial de conversaciones -->
-    <div class="col-span-12 md:col-span-3 bg-white dark:bg-slate-800 rounded-xl shadow-lg dark:shadow-slate-900/50 p-4 flex flex-col overflow-hidden border border-gray-100 dark:border-slate-700">
+    <div class="col-span-12 md:col-span-3 chat-sidebar rounded-xl p-4 flex flex-col overflow-hidden">
         <div class="mb-4">
             <button 
                 id="new-conversation-btn"
-                class="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg"
+                class="w-full primary-btn bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg"
             >
                 <i class="fas fa-plus mr-2"></i> Nueva Conversación
             </button>
         </div>
         
         <div class="mb-4">
-            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase mb-2">
+            <h3 class="section-label text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase mb-2">
                 <i class="fas fa-history mr-1"></i> Recientes
             </h3>
         </div>
         
         <div id="conversations-list" class="space-y-2 overflow-y-auto flex-1">
             {% for conv in conversations %}
-            <div class="group relative p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition duration-200 cursor-pointer conversation-item" data-id="{{ conv.id }}" data-title="{{ conv.title }}" data-engine="{{ conv.engine_used }}">
+            <div class="group relative p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition duration-200 cursor-pointer conversation-item sidebar-item" data-id="{{ conv.id }}" data-title="{{ conv.title }}" data-engine="{{ conv.engine_used }}">
                 <div class="flex-1 min-w-0 pr-8">
                     <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                         {{ conv.title }}
                     </p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                    <p class="conversation-engine text-xs text-gray-500 dark:text-gray-400">
                         {% if conv.engine_used == 'faiss' %}
                         <i class="fas fa-search text-blue-500"></i> FAISS
                         {% else %}
@@ -57,17 +144,17 @@
     </div>
     
     <!-- Main Chat Area -->
-    <div class="col-span-12 md:col-span-9 bg-white dark:bg-slate-800 rounded-xl shadow-lg dark:shadow-slate-900/50 flex flex-col overflow-hidden border border-gray-100 dark:border-slate-700">
+    <div class="col-span-12 md:col-span-9 chat-main rounded-xl flex flex-col overflow-hidden">
         
         <!-- Chat Header -->
-        <div class="border-b border-gray-200 dark:border-slate-700 p-4 flex-shrink-0">
+        <div class="chat-header p-4 flex-shrink-0">
             <div class="flex items-center justify-between flex-wrap gap-4">
                 <div>
-                    <h2 id="chat-title" class="text-xl font-bold text-gray-900 dark:text-gray-100">
-                        <i class="fas fa-comments text-blue-600 mr-2"></i>
+                    <h2 id="chat-title" class="chat-title text-xl font-bold text-gray-900 dark:text-gray-100">
+                        <i class="fas fa-comments text-blue-700 mr-2"></i>
                         Nueva Conversación
                     </h2>
-                    <p id="chat-subtitle" class="text-sm text-gray-500 dark:text-gray-400">Configura y envía tu primer mensaje</p>
+                    <p id="chat-subtitle" class="chat-subtitle text-sm text-gray-500 dark:text-gray-400">Configura y envía tu primer mensaje</p>
                 </div>
                 
                 <!-- Selectores -->
@@ -76,7 +163,7 @@
                         <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Motor:</label>
                         <select 
                             id="engine-selector"
-                            class="px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                            class="selector px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
                         >
                             <option value="faiss">Naive</option>
                             <option value="neo4j">Graph</option>
@@ -87,7 +174,7 @@
                         <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Modelo:</label>
                         <select 
                             id="llm-selector"
-                            class="px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                            class="selector px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
                         >
                             <option value="">Por defecto</option>
                             <option value="openai">OpenAI</option>
@@ -100,7 +187,7 @@
                         <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Doc:</label>
                         <select 
                             id="document-selector"
-                            class="px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                            class="selector px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
                         >
                             <option value="">Todos</option>
                             {% for doc in documents %}
@@ -114,7 +201,7 @@
         
         <!-- Messages Area -->
         <div id="messages-container" class="flex-1 overflow-y-auto p-6 space-y-4 dark:bg-slate-800/50">
-            <div class="text-center text-gray-500 dark:text-gray-400 py-12">
+            <div class="messages-empty text-center text-gray-500 dark:text-gray-400 py-12">
                 <i class="fas fa-comments text-6xl mb-4 text-gray-300 dark:text-slate-600"></i>
                 <p class="text-lg">Selecciona o crea una conversación para comenzar</p>
                 <p class="text-sm mt-2">Elige entre búsqueda semántica (FAISS) o relacional (Neo4j)</p>
@@ -122,7 +209,7 @@
         </div>
         
         <!-- Input Area -->
-        <div class="border-t border-gray-200 dark:border-slate-700 p-4 flex-shrink-0">
+        <div class="chat-input p-4 flex-shrink-0">
             <form id="chat-form" class="flex space-x-2">
                 <input 
                     type="text"
@@ -134,7 +221,7 @@
                 <button 
                     type="submit"
                     id="send-btn"
-                    class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg transition duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="primary-btn bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg transition duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <i class="fas fa-paper-plane"></i>
                 </button>
@@ -208,7 +295,7 @@ function resetConversation() {
     
     // Quitar selección del sidebar
     document.querySelectorAll('.conversation-item').forEach(el => {
-        el.classList.remove('bg-blue-50', 'dark:bg-blue-900/30', 'border-l-4', 'border-blue-600');
+        el.classList.remove('bg-blue-50', 'dark:bg-blue-900/30', 'border-l-4', 'border-blue-600', 'active');
     });
 }
 
@@ -231,9 +318,9 @@ document.querySelectorAll('.conversation-item').forEach(item => {
         
         // Marcar como seleccionada
         document.querySelectorAll('.conversation-item').forEach(el => {
-            el.classList.remove('bg-blue-50', 'dark:bg-blue-900/30', 'border-l-4', 'border-blue-600');
+            el.classList.remove('bg-blue-50', 'dark:bg-blue-900/30', 'border-l-4', 'border-blue-600', 'active');
         });
-        item.classList.add('bg-blue-50', 'dark:bg-blue-900/30', 'border-l-4', 'border-blue-600');
+        item.classList.add('active', 'bg-blue-50', 'dark:bg-blue-900/30', 'border-l-4', 'border-blue-600');
         
         // Cargar mensajes
         await loadMessages(convId);
@@ -355,7 +442,7 @@ function addConversationToSidebar(id, title, engine) {
     if (emptyMsg) emptyMsg.remove();
     
     const div = document.createElement('div');
-    div.className = 'group relative p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition duration-200 cursor-pointer conversation-item bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-600';
+    div.className = 'group relative p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition duration-200 cursor-pointer conversation-item sidebar-item active bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-600';
     div.dataset.id = id;
     div.dataset.title = title;
     div.dataset.engine = engine;

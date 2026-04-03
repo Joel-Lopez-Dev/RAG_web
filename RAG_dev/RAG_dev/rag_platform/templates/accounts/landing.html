@@ -1,16 +1,18 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RAG Platform - Plataforma de Análisis Inteligente</title>
+    <title>RAG Platform | CUAED</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = { darkMode: 'class' }
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Source+Serif+4:wght@500;700&display=swap" rel="stylesheet">
     <script>
         (function() {
             const theme = localStorage.getItem('rag-theme');
@@ -20,141 +22,251 @@
         })();
     </script>
     <style>
-        body { font-family: 'Inter', system-ui, sans-serif; }
-        .hero-gradient {
-            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 50%, #c7d2fe 100%);
+        :root {
+            --cuaed-blue: #0a3d66;
+            --cuaed-blue-soft: #1d5a8d;
+            --cuaed-gold: #c8a24e;
+            --cuaed-wine: #7a2030;
+            --cuaed-paper: #f5f2ea;
         }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #f8f6f1;
+        }
+
+        .title-serif {
+            font-family: 'Source Serif 4', serif;
+        }
+
+        .hero-gradient {
+            position: relative;
+            background:
+                linear-gradient(130deg, rgba(10, 61, 102, 0.78) 0%, rgba(29, 90, 141, 0.72) 42%, rgba(122, 32, 48, 0.72) 100%),
+                url("{% static 'images/cuaed_fondo.jpg' %}") center/cover no-repeat;
+            background-blend-mode: multiply;
+        }
+
+        .page-grid {
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        .dark body {
+            background-color: #0f172a;
+        }
+
         .dark .hero-gradient {
-            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+            background:
+                linear-gradient(130deg, rgba(15, 23, 42, 0.84) 0%, rgba(19, 49, 79, 0.78) 45%, rgba(93, 21, 34, 0.72) 100%),
+                url("{% static 'images/cuaed_fondo.jpg' %}") center/cover no-repeat;
+            background-blend-mode: multiply;
+        }
+
+        .hero-panel {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            backdrop-filter: blur(10px);
+        }
+
+        .hero-copy {
+            color: #f8fafc;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
+        }
+
+        html:not(.dark) .hero-gradient {
+            background: url("{% static 'images/cuaed_fondo.jpg' %}") center/cover no-repeat;
+            background-blend-mode: normal;
+        }
+
+        html:not(.dark) .hero-copy {
+            color: #123a63;
+            text-shadow: none;
+        }
+
+        html:not(.dark) .hero-gradient .absolute.inset-0 {
+            opacity: 0.06;
+        }
+
+        html:not(.dark) .hero-copy h1,
+        html:not(.dark) .hero-copy p {
+            color: #123a63;
+        }
+
+        html:not(.dark) .hero-copy .hero-detail {
+            color: #244a73;
+        }
+
+        html:not(.dark) .hero-panel {
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid rgba(18, 58, 99, 0.12);
+            backdrop-filter: blur(8px);
+        }
+
+        html:not(.dark) .hero-secondary-btn {
+            background: rgba(255, 255, 255, 0.78);
+            color: #123a63;
+            border-color: rgba(18, 58, 99, 0.22);
+        }
+
+        html:not(.dark) .hero-secondary-btn:hover {
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        html:not(.dark) .hero-primary-btn {
+            box-shadow: 0 10px 24px rgba(200, 162, 78, 0.30);
         }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-slate-900 min-h-screen transition-colors duration-300">
+<body class="min-h-screen transition-colors duration-300 text-slate-800 dark:text-slate-100">
     
-    <!-- Top bar with theme toggle -->
     <div class="absolute top-4 right-6 z-20">
-        <button id="theme-toggle" class="p-2.5 rounded-full bg-white/80 dark:bg-slate-800/80 backdrop-blur shadow-lg text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition" title="Cambiar tema">
+        <button id="theme-toggle" class="p-2.5 rounded-full bg-white/90 dark:bg-slate-800/80 backdrop-blur shadow-lg text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white transition" title="Cambiar tema">
             <i id="theme-icon-light" class="fas fa-sun text-lg hidden"></i>
             <i id="theme-icon-dark" class="fas fa-moon text-lg"></i>
         </button>
     </div>
 
-    <!-- Hero Section -->
-    <div class="hero-gradient relative overflow-hidden">
-        <div class="absolute inset-0 opacity-5">
-            <div class="absolute top-20 left-20 w-72 h-72 bg-blue-400 rounded-full blur-3xl"></div>
-            <div class="absolute bottom-20 right-20 w-96 h-96 bg-indigo-400 rounded-full blur-3xl"></div>
-        </div>
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 relative">
-            <div class="text-center">
-                <div class="mb-8">
-                    <div class="inline-flex items-center justify-center w-24 h-24 bg-blue-600 dark:bg-blue-500 rounded-2xl shadow-xl shadow-blue-500/30 mb-4">
-                        <i class="fas fa-brain text-white text-5xl"></i>
-                    </div>
-                </div>
-                <h1 class="text-5xl md:text-6xl font-extrabold text-gray-900 dark:text-white mb-6 tracking-tight">
-                    RAG Platform
-                </h1>
-                <p class="text-xl text-gray-600 dark:text-gray-300 mb-4 max-w-3xl mx-auto">
-                    Plataforma profesional de Análisis de Documentos con IA
-                </p>
-                <p class="text-lg text-gray-500 dark:text-gray-400 mb-10">
-                    Powered by OpenAI GPT-4o, FAISS & Neo4j GraphRAG
-                </p>
-                
-                <div class="flex justify-center space-x-4">
-                    <a href="{% url 'accounts:login' %}" class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-8 py-3.5 rounded-xl font-semibold text-lg transition duration-200 shadow-lg shadow-blue-500/30 hover:shadow-xl">
-                        <i class="fas fa-sign-in-alt mr-2"></i> Iniciar Sesión
-                    </a>
-                    <a href="{% url 'accounts:register' %}" class="bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 text-blue-600 dark:text-blue-400 px-8 py-3.5 rounded-xl font-semibold text-lg transition duration-200 shadow-lg border-2 border-blue-600 dark:border-blue-500">
-                        <i class="fas fa-user-plus mr-2"></i> Registrarse
-                    </a>
+    <div class="bg-[var(--cuaed-paper)] dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm">
+            <div class="flex items-center gap-3">
+                <img src="{% static 'images/cuaed.png' %}" alt="CUAED" class="h-10 w-auto object-contain">
+                <div>
+                    <p class="font-semibold tracking-wide text-[var(--cuaed-blue)] dark:text-sky-300">
+                        COORDINACION DE UNIVERSIDAD ABIERTA Y EDUCACION DIGITAL
+                    </p>
+                    <p class="text-slate-600 dark:text-slate-300">Universidad Nacional Autonoma de Mexico</p>
                 </div>
             </div>
+            <img src="{% static 'images/unam.png' %}" alt="UNAM" class="h-10 w-auto object-contain opacity-95">
         </div>
     </div>
-    
-    <!-- Features Section -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <h2 class="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">
-            Características Principales
-        </h2>
-        
-        <div class="grid md:grid-cols-3 gap-8">
-            <!-- Feature 1 -->
-            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg dark:shadow-slate-900/50 p-8 hover:shadow-xl dark:hover:shadow-slate-900/70 transition duration-300 border border-gray-100 dark:border-slate-700 hover:-translate-y-1">
-                <div class="text-center">
-                    <div class="bg-blue-100 dark:bg-blue-900/40 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5">
-                        <i class="fas fa-search text-blue-600 dark:text-blue-400 text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Búsqueda Semántica (FAISS)</h3>
-                    <p class="text-gray-600 dark:text-gray-400">
-                        Motor de búsqueda vectorial ultra-rápido para encontrar información relevante por similitud semántica.
+
+    <section class="hero-gradient page-grid relative overflow-hidden">
+        <div class="absolute inset-0 opacity-35">
+            <div class="absolute -top-20 -left-10 w-64 h-64 bg-[var(--cuaed-gold)]/30 rounded-full blur-3xl"></div>
+            <div class="absolute -bottom-20 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
+        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 relative">
+            <div class="grid lg:grid-cols-2 gap-10 items-center">
+                <div class="hero-copy max-w-2xl">
+                    <span class="inline-flex items-center text-xs md:text-sm uppercase font-semibold tracking-[0.22em] text-[var(--cuaed-gold)] hero-detail">
+                        Innovacion educativa digital
+                    </span>
+                    <h1 class="title-serif text-4xl sm:text-5xl md:text-6xl text-white mt-5 leading-tight">
+                        RAG Platform
+                    </h1>
+                    <p class="text-white/90 text-lg md:text-xl mt-6 max-w-2xl leading-relaxed hero-copy-text">
+                        Plataforma institucional para analizar documentos con IA, generar respuestas fundamentadas y explorar conocimiento con motores semanticos y de grafo.
                     </p>
+                    <div class="mt-8 flex flex-wrap gap-4">
+                        <a href="{% url 'accounts:login' %}" class="inline-flex items-center bg-[var(--cuaed-gold)] hover:bg-amber-500 text-slate-900 px-7 py-3 rounded-md font-bold transition shadow-lg hero-primary-btn">
+                            <i class="fas fa-sign-in-alt mr-2"></i> Iniciar Sesion
+                        </a>
+                        <a href="{% url 'accounts:register' %}" class="inline-flex items-center hero-panel text-white px-7 py-3 rounded-md font-semibold transition hover:bg-white/20 hero-secondary-btn">
+                            <i class="fas fa-user-plus mr-2"></i> Registrarse
+                        </a>
+                    </div>
+                    <div class="mt-10 grid sm:grid-cols-3 gap-4 text-white/90 text-sm">
+                        <div class="rounded-lg bg-white/10 px-4 py-3 border border-white/20 hero-panel">
+                            <p class="font-bold text-[var(--cuaed-gold)]">+10k</p>
+                            <p>Fragmentos indexables</p>
+                        </div>
+                        <div class="rounded-lg bg-white/10 px-4 py-3 border border-white/20 hero-panel">
+                            <p class="font-bold text-[var(--cuaed-gold)]">2 motores</p>
+                            <p>FAISS y Neo4j</p>
+                        </div>
+                        <div class="rounded-lg bg-white/10 px-4 py-3 border border-white/20 hero-panel">
+                            <p class="font-bold text-[var(--cuaed-gold)]">RAG listo</p>
+                            <p>para investigacion</p>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            
-            <!-- Feature 2 -->
-            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg dark:shadow-slate-900/50 p-8 hover:shadow-xl dark:hover:shadow-slate-900/70 transition duration-300 border border-gray-100 dark:border-slate-700 hover:-translate-y-1">
-                <div class="text-center">
-                    <div class="bg-green-100 dark:bg-green-900/40 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5">
-                        <i class="fas fa-project-diagram text-green-600 dark:text-green-400 text-2xl"></i>
+                <div class="bg-white/90 dark:bg-slate-900/85 backdrop-blur rounded-xl border border-white/30 dark:border-slate-700 shadow-2xl overflow-hidden">
+                    <div class="h-2 bg-gradient-to-r from-[var(--cuaed-wine)] via-[var(--cuaed-gold)] to-[var(--cuaed-blue)]"></div>
+                    <div class="p-7">
+                        <div class="flex items-center gap-3 mb-4">
+                            <img src="{% static 'images/cuaed.png' %}" alt="CUAED" class="h-12 w-auto object-contain">
+                            <img src="{% static 'images/unam.png' %}" alt="UNAM" class="h-12 w-auto object-contain">
+                        </div>
+                        <h2 class="title-serif text-2xl text-[var(--cuaed-blue)] dark:text-sky-300">Ecosistema de consulta academica</h2>
+                        <ul class="mt-5 space-y-4 text-slate-700 dark:text-slate-200">
+                            <li class="flex items-start"><i class="fas fa-check-circle text-[var(--cuaed-wine)] mt-1 mr-3"></i><span>Sube documentos institucionales en PDF o TXT.</span></li>
+                            <li class="flex items-start"><i class="fas fa-check-circle text-[var(--cuaed-wine)] mt-1 mr-3"></i><span>Consulta con trazabilidad de fuentes y contexto.</span></li>
+                            <li class="flex items-start"><i class="fas fa-check-circle text-[var(--cuaed-wine)] mt-1 mr-3"></i><span>Alterna entre busqueda semantica y relacional.</span></li>
+                        </ul>
+                        <div class="mt-6 p-4 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm border border-slate-200 dark:border-slate-700">
+                            <p class="font-semibold text-[var(--cuaed-blue)] dark:text-sky-300">Uso recomendado</p>
+                            <p class="mt-1">Inicia sesion y carga un documento para comenzar una conversacion orientada a evidencia.</p>
+                        </div>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">GraphRAG (Neo4j)</h3>
-                    <p class="text-gray-600 dark:text-gray-400">
-                        Navegación por grafos de conocimiento para entender relaciones complejas entre conceptos.
-                    </p>
-                </div>
-            </div>
-            
-            <!-- Feature 3 -->
-            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg dark:shadow-slate-900/50 p-8 hover:shadow-xl dark:hover:shadow-slate-900/70 transition duration-300 border border-gray-100 dark:border-slate-700 hover:-translate-y-1">
-                <div class="text-center">
-                    <div class="bg-purple-100 dark:bg-purple-900/40 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5">
-                        <i class="fas fa-robot text-purple-600 dark:text-purple-400 text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">GPT-4o Turbo</h3>
-                    <p class="text-gray-600 dark:text-gray-400">
-                        Respuestas precisas y contextualizadas generadas por el modelo más avanzado de OpenAI.
-                    </p>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
     
-    <!-- Tech Stack -->
-    <div class="bg-white dark:bg-slate-800 py-20 border-t border-gray-100 dark:border-slate-700 transition-colors">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 class="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">
-                Tecnologías Utilizadas
-            </h2>
-            
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-                <div class="p-6 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 transition">
-                    <i class="fab fa-python text-blue-500 text-5xl mb-3"></i>
-                    <p class="text-gray-700 dark:text-gray-300 font-semibold">Django & Python</p>
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
+        <div class="text-center mb-12">
+            <p class="text-sm uppercase tracking-[0.2em] font-semibold text-[var(--cuaed-wine)] dark:text-rose-300">Servicios RAG</p>
+            <h2 class="title-serif text-3xl md:text-4xl text-slate-900 dark:text-white mt-3">Caracteristicas principales</h2>
+            <div class="w-28 h-1 bg-[var(--cuaed-gold)] mx-auto mt-5"></div>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-7">
+            <article class="bg-white dark:bg-slate-800 rounded-xl p-7 border border-slate-200 dark:border-slate-700 shadow-lg hover:shadow-xl transition">
+                <div class="w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center mb-4">
+                    <i class="fas fa-search text-[var(--cuaed-blue)] dark:text-sky-300"></i>
                 </div>
-                <div class="p-6 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 transition">
-                    <i class="fas fa-database text-green-600 dark:text-green-400 text-5xl mb-3"></i>
-                    <p class="text-gray-700 dark:text-gray-300 font-semibold">PostgreSQL & Neo4j</p>
+                <h3 class="font-bold text-lg text-slate-900 dark:text-white">Motor FAISS</h3>
+                <p class="mt-3 text-slate-600 dark:text-slate-300">Recuperacion semantica eficiente para consultas directas sobre fragmentos relevantes.</p>
+            </article>
+
+            <article class="bg-white dark:bg-slate-800 rounded-xl p-7 border border-slate-200 dark:border-slate-700 shadow-lg hover:shadow-xl transition">
+                <div class="w-12 h-12 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mb-4">
+                    <i class="fas fa-project-diagram text-[var(--cuaed-wine)] dark:text-rose-300"></i>
                 </div>
-                <div class="p-6 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 transition">
-                    <i class="fas fa-brain text-purple-600 dark:text-purple-400 text-5xl mb-3"></i>
-                    <p class="text-gray-700 dark:text-gray-300 font-semibold">OpenAI GPT-4o</p>
+                <h3 class="font-bold text-lg text-slate-900 dark:text-white">Motor Neo4j GraphRAG</h3>
+                <p class="mt-3 text-slate-600 dark:text-slate-300">Analiza vinculos entre conceptos para preguntas complejas de relacion y contexto.</p>
+            </article>
+
+            <article class="bg-white dark:bg-slate-800 rounded-xl p-7 border border-slate-200 dark:border-slate-700 shadow-lg hover:shadow-xl transition">
+                <div class="w-12 h-12 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mb-4">
+                    <i class="fas fa-robot text-emerald-700 dark:text-emerald-300"></i>
                 </div>
-                <div class="p-6 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 transition">
-                    <i class="fas fa-vector-square text-orange-600 dark:text-orange-400 text-5xl mb-3"></i>
-                    <p class="text-gray-700 dark:text-gray-300 font-semibold">FAISS & LangChain</p>
+                <h3 class="font-bold text-lg text-slate-900 dark:text-white">Generacion con LLM</h3>
+                <p class="mt-3 text-slate-600 dark:text-slate-300">Respuestas claras con base documental para apoyo academico y toma de decisiones.</p>
+            </article>
+        </div>
+    </section>
+
+    <section class="bg-white dark:bg-slate-800 border-y border-slate-200 dark:border-slate-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid md:grid-cols-4 gap-6 text-center">
+                <div>
+                    <p class="text-sm uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Framework</p>
+                    <p class="mt-2 font-semibold text-slate-900 dark:text-white">Django + Python</p>
+                </div>
+                <div>
+                    <p class="text-sm uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Datos</p>
+                    <p class="mt-2 font-semibold text-slate-900 dark:text-white">SQLite / PostgreSQL</p>
+                </div>
+                <div>
+                    <p class="text-sm uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Conocimiento</p>
+                    <p class="mt-2 font-semibold text-slate-900 dark:text-white">FAISS y Neo4j</p>
+                </div>
+                <div>
+                    <p class="text-sm uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">IA generativa</p>
+                    <p class="mt-2 font-semibold text-slate-900 dark:text-white">OpenAI / Gemini</p>
                 </div>
             </div>
-        </div>
-    </div>
+    </section>
     
-    <!-- Footer -->
-    <footer class="bg-gray-900 dark:bg-slate-950 text-white py-8">
+    <footer class="bg-[var(--cuaed-blue)] dark:bg-slate-950 text-white py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <p>&copy; 2026 RAG Platform. Desarrollado por CUAED</p>
-            <p class="mt-2 text-gray-400">Basado en arquitectura RAG_dev</p>
+            <p class="font-semibold tracking-wide">RAG Platform | CUAED UNAM</p>
+            <p class="mt-2 text-white/80 text-sm">Coordinacion de Universidad Abierta y Educacion Digital</p>
         </div>
     </footer>
     
