@@ -19,6 +19,18 @@ class Conversation(models.Model):
         default='faiss',
         verbose_name='Motor utilizado'
     )
+    llm_provider = models.CharField(
+        max_length=20,
+        choices=[('openai', 'OpenAI'), ('gemini', 'Gemini'), ('none', 'Sin IA')],
+        null=True,
+        blank=True,
+        verbose_name='Proveedor LLM'
+    )
+    selected_document_id = models.IntegerField(
+        null=True,
+        blank=True,
+        verbose_name='ID del documento seleccionado'
+    )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de creación')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Última actualización')
     is_active = models.BooleanField(default=True, verbose_name='Activa')

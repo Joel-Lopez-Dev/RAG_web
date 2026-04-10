@@ -89,9 +89,7 @@ def logout_view(request):
     """
     Cerrar sesión
     """
-    username = request.user.username
     logout(request)
-    messages.info(request, f'Sesión cerrada. ¡Hasta pronto, {username}!')
     return redirect('accounts:landing')
 
 

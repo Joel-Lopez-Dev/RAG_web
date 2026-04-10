@@ -21,4 +21,8 @@ print("\n✅ ¡RAG listo para ti!")
 - Langchain: [Documentation](https://python.langchain.com/docs/introduction/)
 - OpenNotebook: [Github](https://github.com/lfnovo/open-notebook?tab=readme-ov-file)
 
+### Documentacion adicional
+- [Guia para usar PostgreSQL con Docker](README_POSTGRES.md)
+- [Estructura de base de datos y roles de usuario](README_DATABASE.md)
+
 

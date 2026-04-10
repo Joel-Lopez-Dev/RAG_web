@@ -14,6 +14,23 @@ from rag_platform.core.rag_engines import FaissEngine, Neo4jEngine, Neo4jUnavail
 logger = logging.getLogger(__name__)
 
 
+def _normalize_llm_provider(value):
+    if value in (None, '', 'default'):
+        return None
+    if value in ('openai', 'gemini', 'none'):
+        return value
+    return None
+
+
+def _normalize_document_id(value):
+    if value in (None, ''):
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
 @login_required
 def dashboard(request):
     """
@@ -109,9 +126,9 @@ def send_message(request):
         data = json.loads(request.body)
         conversation_id = data.get('conversation_id')
         message_text = data.get('message')
-        engine_choice = data.get('engine', 'faiss')  # faiss o neo4j
-        llm_provider = data.get('llm_provider')  # openai, gemini, none, o None (usa default)
-        document_id = data.get('document_id')
+        requested_engine = data.get('engine', 'faiss')  # faiss o neo4j
+        requested_llm_provider = _normalize_llm_provider(data.get('llm_provider'))
+        requested_document_id = _normalize_document_id(data.get('document_id'))
         
         if not message_text:
             return JsonResponse({'error': 'Mensaje vacío'}, status=400)
@@ -129,7 +146,9 @@ def send_message(request):
             conversation = Conversation.objects.create(
                 user=request.user,
                 title=title,
-                engine_used=engine_choice
+                engine_used=requested_engine,
+                llm_provider=requested_llm_provider,
+                selected_document_id=requested_document_id
             )
             is_new_conversation = True
         else:
@@ -139,6 +158,46 @@ def send_message(request):
                 id=conversation_id,
                 user=request.user
             )
+
+        # Validar documento para el usuario actual
+        valid_document_id = conversation.selected_document_id if conversation_id else requested_document_id
+        if valid_document_id:
+            doc_exists = Document.objects.filter(
+                id=valid_document_id,
+                user=request.user,
+                status='completed'
+            ).exists()
+            if not doc_exists:
+                valid_document_id = None
+
+        # Para conversaciones existentes, usar siempre configuración persistida.
+        if conversation_id:
+            engine_choice = conversation.engine_used or requested_engine
+            llm_provider = conversation.llm_provider
+            document_id = valid_document_id
+
+            # Backfill para conversaciones antiguas sin llm/doc configurado.
+            updates = []
+            if llm_provider is None and requested_llm_provider is not None:
+                conversation.llm_provider = requested_llm_provider
+                llm_provider = requested_llm_provider
+                updates.append('llm_provider')
+            if conversation.selected_document_id is None and requested_document_id is not None:
+                doc_exists = Document.objects.filter(
+                    id=requested_document_id,
+                    user=request.user,
+                    status='completed'
+                ).exists()
+                if doc_exists:
+                    conversation.selected_document_id = requested_document_id
+                    document_id = requested_document_id
+                    updates.append('selected_document_id')
+            if updates:
+                conversation.save(update_fields=updates)
+        else:
+            engine_choice = conversation.engine_used
+            llm_provider = conversation.llm_provider
+            document_id = valid_document_id
         
         # Guardar mensaje del usuario
         user_message = Message.objects.create(
@@ -178,6 +237,11 @@ def send_message(request):
             conversation_history=history
         )
         
+        # Si el proveedor no vino explícito pero el engine reporta uno efectivo,
+        # persistimos ese valor para que el selector lo recuerde entre sesiones.
+        if llm_provider is None:
+            llm_provider = _normalize_llm_provider(response_data.get('llm_used'))
+
         # Guardar respuesta del asistente
         assistant_message = Message.objects.create(
             conversation=conversation,
@@ -191,7 +255,9 @@ def send_message(request):
         
         # Actualizar conversación
         conversation.engine_used = engine_choice
-        conversation.save()
+        conversation.llm_provider = llm_provider
+        conversation.selected_document_id = document_id
+        conversation.save(update_fields=['engine_used', 'llm_provider', 'selected_document_id', 'updated_at'])
         
         # Cerrar conexión Neo4j si aplica
         if engine_choice == 'neo4j':
@@ -202,6 +268,12 @@ def send_message(request):
             'is_new_conversation': is_new_conversation,
             'conversation_id': conversation.id,
             'conversation_title': conversation.title,
+            'conversation': {
+                'id': conversation.id,
+                'engine': conversation.engine_used,
+                'llm_provider': conversation.llm_provider,
+                'document_id': conversation.selected_document_id,
+            },
             'user_message': {
                 'id': user_message.id,
                 'content': user_message.content,
@@ -308,7 +380,9 @@ def get_conversation_messages(request, conversation_id):
         'conversation': {
             'id': conversation.id,
             'title': conversation.title,
-            'engine': conversation.engine_used
+            'engine': conversation.engine_used,
+            'llm_provider': conversation.llm_provider,
+            'document_id': conversation.selected_document_id
         },
         'messages': [
             {

@@ -1,0 +1,33 @@
+# Local production deployment notes (never commit secrets)
+DEPLOY_PROD_SERVER.md
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Python virtual environments
+.venv/
+venv/
+
+# Python cache/build artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local secret/config files
+*.secrets
+*.secret
+secrets.*
+credentials.*
+
+# Private keys and certificates
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+
+# Optional local deployment notes
+DEPLOY_*.md
+!DEPLOY_CHECKLIST.md

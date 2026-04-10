@@ -2,17 +2,48 @@
 
 {% block title %}Historial de Conversaciones - RAG Platform{% endblock %}
 
+{% block extra_css %}
+<style>
+    :root {
+        --cuaed-blue: #0a3d66;
+        --cuaed-blue-soft: #1d5a8d;
+        --cuaed-gold: #c8a24e;
+        --cuaed-wine: #7a2030;
+    }
+
+    html:not(.dark) .history-surface {
+        background: linear-gradient(180deg, #ffffff 0%, #f5f9fe 100%);
+        border-color: rgba(10, 61, 102, 0.12);
+        box-shadow: 0 14px 28px rgba(10, 61, 102, 0.08);
+    }
+
+    html:not(.dark) .history-field:focus {
+        border-color: rgba(10, 61, 102, 0.35);
+        box-shadow: 0 0 0 2px rgba(10, 61, 102, 0.16);
+    }
+
+    html:not(.dark) .history-item:hover {
+        box-shadow: 0 16px 34px rgba(10, 61, 102, 0.12);
+        border-color: rgba(10, 61, 102, 0.18);
+    }
+    
+    .history-stat {
+        border: 1px solid rgba(255, 255, 255, 0.22);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="mb-6">
     <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-        <i class="fas fa-history text-blue-600 dark:text-blue-400 mr-3"></i>
+        <i class="fas fa-history text-[var(--cuaed-blue)] dark:text-sky-300 mr-3"></i>
         Historial de Conversaciones
     </h1>
     <p class="text-gray-600 dark:text-gray-400">Explora todas tus conversaciones pasadas</p>
 </div>
 
 <!-- Buscador y filtros -->
-<div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg dark:shadow-slate-900/50 p-6 mb-6 border border-gray-100 dark:border-slate-700">
+<div class="history-surface bg-white dark:bg-slate-800 rounded-xl shadow-lg dark:shadow-slate-900/50 p-6 mb-6 border border-gray-100 dark:border-slate-700">
     <form method="get" class="space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
@@ -22,13 +53,13 @@
                     name="q" 
                     value="{{ request.GET.q }}"
                     placeholder="Título de conversación..."
-                    class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    class="history-field w-full px-4 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-0"
                 >
             </div>
             
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Motor</label>
-                <select name="engine" class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500">
+                <select name="engine" class="history-field w-full px-4 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-0">
                     <option value="">Todos</option>
                     <option value="faiss" {% if request.GET.engine == 'faiss' %}selected{% endif %}>FAISS</option>
                     <option value="neo4j" {% if request.GET.engine == 'neo4j' %}selected{% endif %}>Neo4j</option>
@@ -37,7 +68,7 @@
             
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Estado</label>
-                <select name="active" class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500">
+                <select name="active" class="history-field w-full px-4 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-0">
                     <option value="">Todas</option>
                     <option value="true" {% if request.GET.active == 'true' %}selected{% endif %}>Activas</option>
                     <option value="false" {% if request.GET.active == 'false' %}selected{% endif %}>Archivadas</option>
@@ -46,10 +77,10 @@
         </div>
         
         <div class="flex justify-end space-x-2">
-            <a href="{% url 'chat:history' %}" class="px-6 py-2 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition">
+            <a href="{% url 'chat:history' %}" class="px-6 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-gray-300 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition">
                 Limpiar
             </a>
-            <button type="submit" class="px-6 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition">
+            <button type="submit" class="px-6 py-2 bg-[var(--cuaed-blue)] dark:bg-sky-700 text-white rounded-lg hover:bg-[#083454] dark:hover:bg-sky-600 transition">
                 <i class="fas fa-search mr-2"></i> Buscar
             </button>
         </div>
@@ -58,43 +89,43 @@
 
 <!-- Estadísticas -->
 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-    <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg shadow-md p-6">
+    <div class="history-stat bg-gradient-to-br from-[var(--cuaed-blue)] to-[#083454] text-white rounded-lg shadow-md p-6">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-blue-100 text-sm">Total</p>
+                <p class="text-sky-100/90 text-sm">Total</p>
                 <p class="text-3xl font-bold">{{ total_conversations }}</p>
             </div>
-            <i class="fas fa-comments text-4xl text-blue-200"></i>
+            <i class="fas fa-comments text-4xl text-sky-100/80"></i>
         </div>
     </div>
     
-    <div class="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg shadow-md p-6">
+    <div class="history-stat bg-gradient-to-br from-[var(--cuaed-blue-soft)] to-[var(--cuaed-blue)] text-white rounded-lg shadow-md p-6">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-green-100 text-sm">FAISS</p>
+                <p class="text-sky-100/90 text-sm">FAISS</p>
                 <p class="text-3xl font-bold">{{ faiss_count }}</p>
             </div>
-            <i class="fas fa-bolt text-4xl text-green-200"></i>
+            <i class="fas fa-bolt text-4xl text-sky-100/80"></i>
         </div>
     </div>
     
-    <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg shadow-md p-6">
+    <div class="history-stat bg-gradient-to-br from-[var(--cuaed-wine)] to-[#5f1825] text-white rounded-lg shadow-md p-6">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-purple-100 text-sm">Neo4j</p>
+                <p class="text-rose-100/90 text-sm">Neo4j</p>
                 <p class="text-3xl font-bold">{{ neo4j_count }}</p>
             </div>
-            <i class="fas fa-project-diagram text-4xl text-purple-200"></i>
+            <i class="fas fa-project-diagram text-4xl text-rose-100/80"></i>
         </div>
     </div>
     
-    <div class="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-lg shadow-md p-6">
+    <div class="history-stat bg-gradient-to-br from-[var(--cuaed-gold)] to-[#b28f41] text-slate-900 rounded-lg shadow-md p-6">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-orange-100 text-sm">Activas</p>
+                <p class="text-slate-800/80 text-sm">Activas</p>
                 <p class="text-3xl font-bold">{{ active_count }}</p>
             </div>
-            <i class="fas fa-fire text-4xl text-orange-200"></i>
+            <i class="fas fa-fire text-4xl text-slate-800/60"></i>
         </div>
     </div>
 </div>
@@ -102,7 +133,7 @@
 <!-- Lista de conversaciones -->
 <div class="space-y-4">
     {% for conversation in page_obj %}
-    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg dark:shadow-slate-900/50 hover:shadow-xl transition duration-200 border border-gray-100 dark:border-slate-700">
+    <div class="history-item history-surface bg-white dark:bg-slate-800 rounded-xl shadow-lg dark:shadow-slate-900/50 hover:shadow-xl transition duration-200 border border-gray-100 dark:border-slate-700">
         <div class="p-6">
             <div class="flex items-start justify-between mb-3">
                 <div class="flex-1">
@@ -122,17 +153,17 @@
                         </span>
                         
                         {% if conversation.engine_used == 'faiss' %}
-                        <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full font-semibold">
+                        <span class="bg-sky-100 text-sky-800 px-3 py-1 rounded-full font-semibold dark:bg-sky-900/40 dark:text-sky-200">
                             <i class="fas fa-bolt mr-1"></i> FAISS
                         </span>
                         {% else %}
-                        <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full font-semibold">
+                        <span class="bg-rose-100 text-rose-800 px-3 py-1 rounded-full font-semibold dark:bg-rose-900/40 dark:text-rose-200">
                             <i class="fas fa-project-diagram mr-1"></i> Neo4j
                         </span>
                         {% endif %}
                         
                         {% if conversation.is_active %}
-                        <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-semibold">
+                        <span class="bg-amber-100 text-amber-800 px-3 py-1 rounded-full font-semibold dark:bg-amber-900/40 dark:text-amber-200">
                             <i class="fas fa-check-circle mr-1"></i> Activa
                         </span>
                         {% else %}
@@ -146,14 +177,14 @@
                 <div class="flex space-x-2">
                     <a 
                         href="{% url 'chat:conversation_detail' conversation.id %}" 
-                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                        class="px-4 py-2 bg-[var(--cuaed-blue)] text-white rounded-lg hover:bg-[#083454] transition"
                     >
                         <i class="fas fa-eye mr-1"></i> Ver
                     </a>
                     
                     <button 
                         onclick="deleteConversation({{ conversation.id }})"
-                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                        class="px-4 py-2 bg-[var(--cuaed-wine)] text-white rounded-lg hover:bg-[#5f1825] transition"
                     >
                         <i class="fas fa-trash"></i>
                     </button>
@@ -161,7 +192,7 @@
             </div>
             
             {% if conversation.last_message %}
-            <div class="bg-gray-50 dark:bg-slate-700/50 rounded-lg p-3 text-sm text-gray-700 dark:text-gray-300">
+            <div class="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3 text-sm text-gray-700 dark:text-gray-300 border border-slate-200/70 dark:border-slate-600/60">
                 <p class="font-semibold mb-1">Último mensaje:</p>
                 <p class="line-clamp-2">{{ conversation.last_message }}</p>
             </div>
@@ -169,10 +200,10 @@
         </div>
     </div>
     {% empty %}
-    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-12 text-center border border-gray-100 dark:border-slate-700">
-        <i class="fas fa-search text-gray-300 dark:text-slate-600 text-6xl mb-4"></i>
+    <div class="history-surface bg-white dark:bg-slate-800 rounded-xl shadow-lg p-12 text-center border border-gray-100 dark:border-slate-700">
+        <i class="fas fa-search text-slate-300 dark:text-slate-600 text-6xl mb-4"></i>
         <p class="text-xl text-gray-500 dark:text-gray-400 mb-4">No se encontraron conversaciones</p>
-        <a href="{% url 'chat:dashboard' %}" class="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+        <a href="{% url 'chat:dashboard' %}" class="inline-block px-6 py-3 bg-[var(--cuaed-blue)] text-white rounded-lg hover:bg-[#083454] transition">
             <i class="fas fa-plus mr-2"></i> Nueva Conversación
         </a>
     </div>
@@ -184,17 +215,17 @@
 <div class="mt-6 flex justify-center">
     <nav class="flex space-x-2">
         {% if page_obj.has_previous %}
-        <a href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}" class="px-4 py-2 bg-white rounded-lg shadow hover:bg-gray-50">
+        <a href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}" class="px-4 py-2 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-lg shadow border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition">
             Anterior
         </a>
         {% endif %}
         
-        <span class="px-4 py-2 bg-blue-600 text-white rounded-lg">
+        <span class="px-4 py-2 bg-[var(--cuaed-blue)] text-white rounded-lg">
             Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
         </span>
         
         {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}" class="px-4 py-2 bg-white rounded-lg shadow hover:bg-gray-50">
+        <a href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}" class="px-4 py-2 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-lg shadow border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition">
             Siguiente
         </a>
         {% endif %}

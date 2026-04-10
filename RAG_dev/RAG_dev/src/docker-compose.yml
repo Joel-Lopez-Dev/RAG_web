@@ -1,6 +1,18 @@
 version: '3.8'
 
 services:
+  postgres:
+    image: postgres:16
+    container_name: rag_postgres
+    ports:
+      - 5433:5432
+    environment:
+      POSTGRES_DB: rag_platform_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
   neo4j:
     image: neo4j:5
     container_name: neo4j_graph
@@ -17,4 +29,5 @@ services:
       - neo4j_data:/data
 
 volumes:
+  postgres_data:
   neo4j_data:

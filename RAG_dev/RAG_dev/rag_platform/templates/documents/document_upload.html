@@ -2,17 +2,44 @@
 
 {% block title %}Subir Documento - RAG Platform{% endblock %}
 
+{% block extra_css %}
+<style>
+    :root {
+        --cuaed-blue: #0a3d66;
+        --cuaed-blue-soft: #1d5a8d;
+        --cuaed-gold: #c8a24e;
+        --cuaed-wine: #7a2030;
+    }
+
+    html:not(.dark) .upload-surface {
+        background: linear-gradient(180deg, #ffffff 0%, #f5f9fe 100%);
+        border-color: rgba(10, 61, 102, 0.12);
+        box-shadow: 0 14px 28px rgba(10, 61, 102, 0.08);
+    }
+
+    html:not(.dark) .drop-zone {
+        border-color: rgba(10, 61, 102, 0.22);
+        background: rgba(255, 255, 255, 0.85);
+    }
+
+    html:not(.dark) .drop-zone.is-over {
+        border-color: rgba(10, 61, 102, 0.5);
+        background: rgba(10, 61, 102, 0.08);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="max-w-3xl mx-auto">
     <div class="mb-6">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-            <i class="fas fa-upload text-blue-600 dark:text-blue-400 mr-2"></i>
+            <i class="fas fa-upload text-[var(--cuaed-blue)] dark:text-sky-300 mr-2"></i>
             Subir Documento
         </h1>
         <p class="mt-2 text-gray-600 dark:text-gray-400">Sube un archivo PDF o TXT para indexarlo en los motores RAG</p>
     </div>
     
-    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg dark:shadow-slate-900/50 p-8 border border-gray-100 dark:border-slate-700">
+    <div class="upload-surface bg-white dark:bg-slate-800 rounded-xl shadow-lg dark:shadow-slate-900/50 p-8 border border-gray-100 dark:border-slate-700">
         <form method="post" enctype="multipart/form-data" id="upload-form">
             {% csrf_token %}
             
@@ -21,7 +48,7 @@
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     <i class="fas fa-file mr-1"></i> Archivo
                 </label>
-                <div class="border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-lg p-8 text-center hover:border-blue-500 transition duration-200 bg-gray-50 dark:bg-slate-700/30">
+                <div id="drop-zone" class="drop-zone border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-lg p-8 text-center hover:border-[var(--cuaed-blue)] transition duration-200 bg-gray-50 dark:bg-slate-700/30">
                     <input 
                         type="file"
                         name="file"
@@ -35,7 +62,7 @@
                         <p class="text-gray-600 dark:text-gray-300">Haz clic para seleccionar o arrastra el archivo aquí</p>
                         <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">PDF o TXT (máximo 50MB)</p>
                     </label>
-                    <div id="file-name" class="mt-4 text-sm text-blue-600 font-medium hidden"></div>
+                    <div id="file-name" class="mt-4 text-sm text-[var(--cuaed-blue)] dark:text-sky-300 font-medium hidden"></div>
                 </div>
             </div>
             
@@ -52,10 +79,10 @@
                             name="index_faiss"
                             id="index_faiss"
                             checked
-                            class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            class="w-4 h-4 text-[var(--cuaed-blue)] border-gray-300 rounded focus:ring-[var(--cuaed-blue)]"
                         >
                         <label for="index_faiss" class="ml-3 flex items-center">
-                            <i class="fas fa-search text-blue-600 mr-2"></i>
+                            <i class="fas fa-search text-[var(--cuaed-blue-soft)] mr-2"></i>
                             <span class="text-gray-700 dark:text-gray-300">Indexar en FAISS (Búsqueda Semántica)</span>
                         </label>
                     </div>
@@ -66,10 +93,10 @@
                             name="index_neo4j"
                             id="index_neo4j"
                             checked
-                            class="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                            class="w-4 h-4 text-[var(--cuaed-wine)] border-gray-300 rounded focus:ring-[var(--cuaed-wine)]"
                         >
                         <label for="index_neo4j" class="ml-3 flex items-center">
-                            <i class="fas fa-project-diagram text-green-600 mr-2"></i>
+                            <i class="fas fa-project-diagram text-[var(--cuaed-wine)] mr-2"></i>
                             <span class="text-gray-700 dark:text-gray-300">Indexar en Neo4j (GraphRAG)</span>
                         </label>
                     </div>
@@ -77,10 +104,10 @@
             </div>
             
             <!-- Info alert -->
-            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+            <div class="bg-sky-50 dark:bg-sky-900/20 border border-sky-200 dark:border-sky-800 rounded-lg p-4 mb-6">
                 <div class="flex">
-                    <i class="fas fa-info-circle text-blue-600 mt-1 mr-3"></i>
-                    <div class="text-sm text-blue-800 dark:text-blue-300">
+                    <i class="fas fa-info-circle text-[var(--cuaed-blue)] dark:text-sky-300 mt-1 mr-3"></i>
+                    <div class="text-sm text-sky-800 dark:text-sky-300">
                         <p class="font-semibold mb-1">Proceso de indexación:</p>
                         <ul class="list-disc ml-5 space-y-1">
                             <li>Se extraerá texto y metadata del documento</li>
@@ -97,13 +124,13 @@
             <div class="flex space-x-3">
                 <button 
                     type="submit"
-                    class="flex-1 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 shadow-md"
+                    class="flex-1 bg-[var(--cuaed-blue)] hover:bg-[#083454] dark:bg-sky-700 dark:hover:bg-sky-600 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 shadow-md"
                 >
                     <i class="fas fa-upload mr-2"></i> Subir y Procesar
                 </button>
                 <a 
                     href="{% url 'documents:list' %}"
-                    class="flex-1 bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-300 font-semibold py-3 px-6 rounded-lg text-center transition duration-200"
+                    class="flex-1 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-gray-300 font-semibold py-3 px-6 rounded-lg text-center transition duration-200"
                 >
                     <i class="fas fa-times mr-2"></i> Cancelar
                 </a>
@@ -117,6 +144,7 @@
 <script>
 const fileInput = document.getElementById('file-input');
 const fileName = document.getElementById('file-name');
+const dropZone = document.getElementById('drop-zone');
 
 fileInput.addEventListener('change', (e) => {
     if (e.target.files.length > 0) {
@@ -125,9 +153,6 @@ fileInput.addEventListener('change', (e) => {
         fileName.classList.remove('hidden');
     }
 });
-
-// Drag and drop
-const dropZone = document.querySelector('[for="file-input"]').parentElement;
 
 ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
     dropZone.addEventListener(eventName, preventDefaults, false);
@@ -140,13 +165,13 @@ function preventDefaults(e) {
 
 ['dragenter', 'dragover'].forEach(eventName => {
     dropZone.addEventListener(eventName, () => {
-        dropZone.classList.add('border-blue-500', 'bg-blue-50');
+        dropZone.classList.add('is-over');
     }, false);
 });
 
 ['dragleave', 'drop'].forEach(eventName => {
     dropZone.addEventListener(eventName, () => {
-        dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+        dropZone.classList.remove('is-over');
     }, false);
 });
 

@@ -2,36 +2,58 @@
 
 {% block title %}Mis Documentos - RAG Platform{% endblock %}
 
+{% block extra_css %}
+<style>
+    :root {
+        --cuaed-blue: #0a3d66;
+        --cuaed-blue-soft: #1d5a8d;
+        --cuaed-gold: #c8a24e;
+        --cuaed-wine: #7a2030;
+    }
+
+    html:not(.dark) .docs-surface {
+        background: linear-gradient(180deg, #ffffff 0%, #f5f9fe 100%);
+        border-color: rgba(10, 61, 102, 0.12);
+        box-shadow: 0 14px 28px rgba(10, 61, 102, 0.08);
+    }
+
+    html:not(.dark) .docs-item:hover {
+        box-shadow: 0 16px 34px rgba(10, 61, 102, 0.12);
+        border-color: rgba(10, 61, 102, 0.18);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="mb-6 flex justify-between items-center">
     <div>
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-            <i class="fas fa-file-pdf text-red-500 mr-2"></i>
+            <i class="fas fa-file-pdf text-[var(--cuaed-wine)] mr-2"></i>
             Mis Documentos
         </h1>
         <p class="mt-2 text-gray-600 dark:text-gray-400">Gestiona tus documentos PDF/TXT para análisis RAG</p>
     </div>
     <a 
         href="{% url 'documents:upload' %}"
-        class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg transition duration-200 shadow-md"
+        class="bg-[var(--cuaed-blue)] hover:bg-[#083454] dark:bg-sky-700 dark:hover:bg-sky-600 text-white font-semibold px-6 py-3 rounded-lg transition duration-200 shadow-md"
     >
         <i class="fas fa-upload mr-2"></i> Subir Documento
     </a>
 </div>
 
 <!-- Filtros -->
-<div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg dark:shadow-slate-900/50 p-4 mb-6 border border-gray-100 dark:border-slate-700">
+<div class="docs-surface bg-white dark:bg-slate-800 rounded-xl shadow-lg dark:shadow-slate-900/50 p-4 mb-6 border border-gray-100 dark:border-slate-700">
     <div class="flex flex-wrap gap-2">
-        <a href="{% url 'documents:list' %}" class="px-4 py-2 rounded-lg {% if not status_filter %}bg-blue-600 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}">
+        <a href="{% url 'documents:list' %}" class="px-4 py-2 rounded-lg transition {% if not status_filter %}bg-[var(--cuaed-blue)] text-white{% else %}bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600{% endif %}">
             Todos
         </a>
-        <a href="?status=completed" class="px-4 py-2 rounded-lg {% if status_filter == 'completed' %}bg-green-600 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}">
+        <a href="?status=completed" class="px-4 py-2 rounded-lg transition {% if status_filter == 'completed' %}bg-[var(--cuaed-gold)] text-slate-900{% else %}bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600{% endif %}">
             Completados
         </a>
-        <a href="?status=processing" class="px-4 py-2 rounded-lg {% if status_filter == 'processing' %}bg-yellow-600 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}">
+        <a href="?status=processing" class="px-4 py-2 rounded-lg transition {% if status_filter == 'processing' %}bg-[var(--cuaed-blue-soft)] text-white{% else %}bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600{% endif %}">
             Procesando
         </a>
-        <a href="?status=failed" class="px-4 py-2 rounded-lg {% if status_filter == 'failed' %}bg-red-600 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}">
+        <a href="?status=failed" class="px-4 py-2 rounded-lg transition {% if status_filter == 'failed' %}bg-[var(--cuaed-wine)] text-white{% else %}bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600{% endif %}">
             Fallidos
         </a>
     </div>
@@ -40,11 +62,11 @@
 <!-- Lista de documentos -->
 <div class="grid gap-4">
     {% for document in page_obj %}
-    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg dark:shadow-slate-900/50 p-6 hover:shadow-xl transition duration-200 border border-gray-100 dark:border-slate-700">
+    <div class="docs-item docs-surface bg-white dark:bg-slate-800 rounded-xl shadow-lg dark:shadow-slate-900/50 p-6 hover:shadow-xl transition duration-200 border border-gray-100 dark:border-slate-700">
         <div class="flex items-center justify-between">
             <div class="flex-1">
                 <div class="flex items-center space-x-3 mb-2">
-                    <i class="fas fa-file-pdf text-red-500 text-2xl"></i>
+                    <i class="fas fa-file-pdf text-[var(--cuaed-wine)] text-2xl"></i>
                     <div>
                         <h3 class="text-lg font-bold text-gray-900 dark:text-white">{{ document.title }}</h3>
                         <p class="text-sm text-gray-500 dark:text-gray-400">
@@ -54,18 +76,18 @@
                 </div>
                 
                 <div class="flex items-center space-x-4 text-sm">
-                    <span class="px-3 py-1 rounded-full {% if document.status == 'completed' %}bg-green-100 text-green-800{% elif document.status == 'processing' %}bg-yellow-100 text-yellow-800{% elif document.status == 'failed' %}bg-red-100 text-red-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                    <span class="px-3 py-1 rounded-full {% if document.status == 'completed' %}bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200{% elif document.status == 'processing' %}bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200{% elif document.status == 'failed' %}bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-200{% else %}bg-gray-100 text-gray-800 dark:bg-slate-700 dark:text-slate-200{% endif %}">
                         {{ document.get_status_display }}
                     </span>
                     
                     {% if document.indexed_in_faiss %}
-                    <span class="text-blue-600">
+                    <span class="text-[var(--cuaed-blue-soft)] dark:text-sky-300">
                         <i class="fas fa-search mr-1"></i> FAISS
                     </span>
                     {% endif %}
                     
                     {% if document.indexed_in_neo4j %}
-                    <span class="text-green-600">
+                    <span class="text-[var(--cuaed-wine)] dark:text-rose-300">
                         <i class="fas fa-project-diagram mr-1"></i> Neo4j
                     </span>
                     {% endif %}
@@ -79,14 +101,14 @@
             <div class="flex space-x-2">
                 <a 
                     href="{% url 'documents:detail' document.id %}"
-                    class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded-lg transition duration-200"
+                    class="bg-[var(--cuaed-blue)]/10 hover:bg-[var(--cuaed-blue)]/20 text-[var(--cuaed-blue)] dark:bg-sky-900/30 dark:hover:bg-sky-900/50 dark:text-sky-200 px-4 py-2 rounded-lg transition duration-200"
                     title="Ver detalles"
                 >
                     <i class="fas fa-eye"></i>
                 </a>
                 <a 
                     href="{% url 'documents:chunks' document.id %}"
-                    class="bg-green-100 hover:bg-green-200 text-green-700 px-4 py-2 rounded-lg transition duration-200"
+                    class="bg-[var(--cuaed-gold)]/20 hover:bg-[var(--cuaed-gold)]/35 text-[#85671e] dark:bg-amber-900/30 dark:hover:bg-amber-900/50 dark:text-amber-200 px-4 py-2 rounded-lg transition duration-200"
                     title="Ver chunks"
                 >
                     <i class="fas fa-cube"></i>
@@ -95,12 +117,12 @@
         </div>
     </div>
     {% empty %}
-    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-12 text-center border border-gray-100 dark:border-slate-700">
+    <div class="docs-surface bg-white dark:bg-slate-800 rounded-xl shadow-lg p-12 text-center border border-gray-100 dark:border-slate-700">
         <i class="fas fa-folder-open text-gray-300 dark:text-slate-600 text-6xl mb-4"></i>
         <p class="text-xl text-gray-500 dark:text-gray-400">No hay documentos aún</p>
         <a 
             href="{% url 'documents:upload' %}"
-            class="inline-block mt-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg"
+            class="inline-block mt-4 bg-[var(--cuaed-blue)] hover:bg-[#083454] text-white font-semibold px-6 py-3 rounded-lg transition"
         >
             Subir tu primer documento
         </a>
@@ -113,17 +135,17 @@
 <div class="mt-6 flex justify-center">
     <nav class="flex space-x-2">
         {% if page_obj.has_previous %}
-        <a href="?page={{ page_obj.previous_page_number }}" class="px-4 py-2 bg-white rounded-lg shadow hover:bg-gray-50">
+        <a href="?page={{ page_obj.previous_page_number }}" class="px-4 py-2 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-lg shadow border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition">
             Anterior
         </a>
         {% endif %}
         
-        <span class="px-4 py-2 bg-blue-600 text-white rounded-lg">
+        <span class="px-4 py-2 bg-[var(--cuaed-blue)] text-white rounded-lg">
             Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
         </span>
         
         {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}" class="px-4 py-2 bg-white rounded-lg shadow hover:bg-gray-50">
+        <a href="?page={{ page_obj.next_page_number }}" class="px-4 py-2 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-lg shadow border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition">
             Siguiente
         </a>
         {% endif %}

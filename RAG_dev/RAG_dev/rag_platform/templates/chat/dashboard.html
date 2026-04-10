@@ -113,7 +113,7 @@
         
         <div id="conversations-list" class="space-y-2 overflow-y-auto flex-1">
             {% for conv in conversations %}
-            <div class="group relative p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition duration-200 cursor-pointer conversation-item sidebar-item" data-id="{{ conv.id }}" data-title="{{ conv.title }}" data-engine="{{ conv.engine_used }}">
+            <div class="group relative p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition duration-200 cursor-pointer conversation-item sidebar-item" data-id="{{ conv.id }}" data-title="{{ conv.title }}" data-engine="{{ conv.engine_used }}" data-llm="{{ conv.llm_provider|default:'' }}" data-document="{{ conv.selected_document_id|default:'' }}">
                 <div class="flex-1 min-w-0 pr-8">
                     <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                         {{ conv.title }}
@@ -241,6 +241,9 @@
 <script>
 let currentConversationId = null;
 let conversationLocked = false;
+let lockedEngine = null;
+let lockedLlmProvider = null;
+let lockedDocumentId = null;
 
 // Eliminar conversación
 function deleteConversation(conversationId) {
@@ -272,6 +275,9 @@ document.getElementById('new-conversation-btn').addEventListener('click', () => 
 function resetConversation() {
     currentConversationId = null;
     conversationLocked = false;
+    lockedEngine = null;
+    lockedLlmProvider = null;
+    lockedDocumentId = null;
     
     // Habilitar selectores
     document.getElementById('engine-selector').disabled = false;
@@ -305,9 +311,28 @@ document.querySelectorAll('.conversation-item').forEach(item => {
         const convId = item.dataset.id;
         const convTitle = item.dataset.title;
         const convEngine = item.dataset.engine;
+        const convLlm = item.dataset.llm || '';
+        const convDocument = item.dataset.document || '';
         
         currentConversationId = parseInt(convId);
         conversationLocked = true;
+        lockedEngine = convEngine;
+        lockedLlmProvider = convLlm || null;
+        lockedDocumentId = convDocument || null;
+
+        // Mantener el selector sincronizado con el motor real de la conversación.
+        const engineSelector = document.getElementById('engine-selector');
+        const llmSelector = document.getElementById('llm-selector');
+        const documentSelector = document.getElementById('document-selector');
+        if (convEngine && engineSelector) {
+            engineSelector.value = convEngine;
+        }
+        if (llmSelector) {
+            llmSelector.value = lockedLlmProvider || '';
+        }
+        if (documentSelector) {
+            documentSelector.value = lockedDocumentId || '';
+        }
         
         // Bloquear selectores
         lockSelectors();
@@ -331,6 +356,25 @@ async function loadMessages(conversationId) {
     try {
         const response = await fetch(`/chat/conversation/${conversationId}/messages/`);
         const data = await response.json();
+
+        if (data.conversation) {
+            lockedEngine = data.conversation.engine || lockedEngine;
+            lockedLlmProvider = data.conversation.llm_provider || null;
+            lockedDocumentId = data.conversation.document_id ? String(data.conversation.document_id) : null;
+
+            const engineSelector = document.getElementById('engine-selector');
+            const llmSelector = document.getElementById('llm-selector');
+            const documentSelector = document.getElementById('document-selector');
+            if (engineSelector && lockedEngine) {
+                engineSelector.value = lockedEngine;
+            }
+            if (llmSelector) {
+                llmSelector.value = lockedLlmProvider || '';
+            }
+            if (documentSelector) {
+                documentSelector.value = lockedDocumentId || '';
+            }
+        }
         
         const container = document.getElementById('messages-container');
         container.innerHTML = '';
@@ -364,11 +408,28 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
     
     const messageInput = document.getElementById('message-input');
     const message = messageInput.value.trim();
-    const engine = document.getElementById('engine-selector').value;
-    const llmProvider = document.getElementById('llm-selector').value;
-    const documentId = document.getElementById('document-selector').value;
+    const engineSelector = document.getElementById('engine-selector');
+    const selectedEngine = engineSelector.value;
+    const engine = (conversationLocked && lockedEngine) ? lockedEngine : selectedEngine;
+    const llmSelector = document.getElementById('llm-selector');
+    const documentSelector = document.getElementById('document-selector');
+    const selectedLlmProvider = llmSelector.value;
+    const selectedDocumentId = documentSelector.value;
+    const llmProvider = (conversationLocked && lockedLlmProvider !== null) ? lockedLlmProvider : selectedLlmProvider;
+    const documentId = (conversationLocked && lockedDocumentId !== null) ? lockedDocumentId : selectedDocumentId;
     
     if (!message) return;
+
+    // Si la conversación está bloqueada, forzamos visualmente el motor correcto.
+    if (conversationLocked && lockedEngine && engineSelector.value !== lockedEngine) {
+        engineSelector.value = lockedEngine;
+    }
+    if (conversationLocked && llmSelector && lockedLlmProvider !== null && llmSelector.value !== lockedLlmProvider) {
+        llmSelector.value = lockedLlmProvider;
+    }
+    if (conversationLocked && documentSelector && lockedDocumentId !== null && documentSelector.value !== lockedDocumentId) {
+        documentSelector.value = lockedDocumentId;
+    }
     
     // Limpiar mensaje inicial si existe
     const initialMsg = document.querySelector('#messages-container .text-center');
@@ -402,10 +463,29 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
         const data = await response.json();
         
         if (data.success) {
+            if (data.conversation) {
+                lockedEngine = data.conversation.engine || lockedEngine;
+                lockedLlmProvider = data.conversation.llm_provider || null;
+                lockedDocumentId = data.conversation.document_id ? String(data.conversation.document_id) : null;
+
+                if (engineSelector && lockedEngine) {
+                    engineSelector.value = lockedEngine;
+                }
+                if (llmSelector) {
+                    llmSelector.value = lockedLlmProvider || '';
+                }
+                if (documentSelector) {
+                    documentSelector.value = lockedDocumentId || '';
+                }
+            }
+
             // Si se creó nueva conversación
             if (data.is_new_conversation && data.conversation_id) {
                 currentConversationId = data.conversation_id;
                 conversationLocked = true;
+                lockedEngine = (data.conversation && data.conversation.engine) || engine;
+                lockedLlmProvider = (data.conversation && data.conversation.llm_provider) || null;
+                lockedDocumentId = (data.conversation && data.conversation.document_id) ? String(data.conversation.document_id) : null;
                 lockSelectors();
                 
                 // Actualizar título
@@ -413,7 +493,7 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
                 document.getElementById('chat-subtitle').textContent = 'Conversación en curso';
                 
                 // Agregar al sidebar
-                addConversationToSidebar(data.conversation_id, data.conversation_title, engine);
+                addConversationToSidebar(data.conversation_id, data.conversation_title, lockedEngine, lockedLlmProvider, lockedDocumentId);
             }
             
             addMessage('assistant', data.assistant_message.content, {
@@ -436,7 +516,7 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
     }
 });
 
-function addConversationToSidebar(id, title, engine) {
+function addConversationToSidebar(id, title, engine, llmProvider = null, documentId = null) {
     const list = document.getElementById('conversations-list');
     const emptyMsg = list.querySelector('p.text-center');
     if (emptyMsg) emptyMsg.remove();
@@ -446,6 +526,8 @@ function addConversationToSidebar(id, title, engine) {
     div.dataset.id = id;
     div.dataset.title = title;
     div.dataset.engine = engine;
+    div.dataset.llm = llmProvider || '';
+    div.dataset.document = documentId || '';
     div.innerHTML = `
         <div class="flex-1 min-w-0 pr-8">
             <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">${title}</p>
