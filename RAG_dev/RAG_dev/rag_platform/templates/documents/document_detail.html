@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="mb-6">
-    <a href="{% url 'documents:list' %}" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
+    <a href="{% url 'documents:list' %}?scope={{ scope|default:'manuscript' }}" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
         <i class="fas fa-arrow-left mr-1"></i> Volver a Documentos
     </a>
 </div>
@@ -23,12 +23,12 @@
         
         <div class="flex space-x-2">
             <a 
-                href="{% url 'documents:chunks' document.id %}"
+                href="{% url 'documents:chunks' document.id %}?scope={{ scope|default:'manuscript' }}"
                 class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
             >
                 <i class="fas fa-cube mr-1"></i> Ver Chunks
             </a>
-            <form method="post" action="{% url 'documents:delete' document.id %}" onsubmit="return confirm('¿Eliminar este documento?');">
+            <form method="post" action="{% url 'documents:delete' document.id %}?scope={{ scope|default:'manuscript' }}" onsubmit="return confirm('¿Eliminar este documento?');">
                 {% csrf_token %}
                 <button 
                     type="submit"
@@ -126,7 +126,7 @@
 <!-- Re-indexar -->
 <div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg dark:shadow-slate-900/50 p-6 border border-gray-100 dark:border-slate-700">
     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Re-indexar Documento</h3>
-    <form method="post" action="{% url 'documents:reindex' document.id %}">
+    <form method="post" action="{% url 'documents:reindex' document.id %}?scope={{ scope|default:'manuscript' }}">
         {% csrf_token %}
         <div class="flex items-center space-x-4 mb-4">
             <label class="flex items-center">

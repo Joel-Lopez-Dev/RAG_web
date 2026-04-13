@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
@@ -73,10 +74,12 @@ def document_upload(request):
     """
     Subida de documentos PDF/TXT
     """
+    scope = request.GET.get('scope', request.POST.get('scope', 'manuscript'))
+
     if request.method == 'POST':
         if 'file' not in request.FILES:
             messages.error(request, 'No se seleccionó ningún archivo.')
-            return redirect('documents:upload')
+            return redirect(f'{request.path}?scope={scope}')
         
         uploaded_file = request.FILES['file']
         index_in_faiss = request.POST.get('index_faiss') == 'on'
@@ -86,12 +89,12 @@ def document_upload(request):
         file_ext = os.path.splitext(uploaded_file.name)[1].lower()
         if file_ext not in ['.pdf', '.txt']:
             messages.error(request, 'Solo se permiten archivos PDF o TXT.')
-            return redirect('documents:upload')
+            return redirect(f'{request.path}?scope={scope}')
         
         # Validar tamaño (50MB máximo)
         if uploaded_file.size > 50 * 1024 * 1024:
             messages.error(request, 'El archivo es demasiado grande (máximo 50MB).')
-            return redirect('documents:upload')
+            return redirect(f'{request.path}?scope={scope}')
         
         # Crear documento
         document = Document.objects.create(
@@ -117,9 +120,9 @@ def document_upload(request):
             document.save()
             messages.error(request, f'Error al procesar el documento: {str(e)}')
         
-        return redirect('documents:detail', document_id=document.id)
+        return redirect(f"{reverse('documents:detail', args=[document.id])}?scope={scope}")
     
-    return render(request, 'documents/document_upload.html')
+    return render(request, 'documents/document_upload.html', {'scope': scope})
 
 
 def process_document_task(document_id: int, index_faiss: bool, index_neo4j: bool):
@@ -222,9 +225,12 @@ def document_detail(request, document_id):
         id=document_id,
         user=request.user
     )
+
+    scope = request.GET.get('scope', 'manuscript')
     
     context = {
         'document': document,
+        'scope': scope,
     }
     
     return render(request, 'documents/document_detail.html', context)
@@ -240,6 +246,8 @@ def document_chunks(request, document_id):
         id=document_id,
         user=request.user
     )
+
+    scope = request.GET.get('scope', 'manuscript')
     
     chunks = document.chunks.all().order_by('chunk_index')
     
@@ -261,6 +269,7 @@ def document_chunks(request, document_id):
         'page_obj': page_obj,
         'sections': sections,
         'section_filter': section_filter,
+        'scope': scope,
     }
     
     return render(request, 'documents/document_chunks.html', context)
@@ -277,6 +286,8 @@ def document_delete(request, document_id):
         id=document_id,
         user=request.user
     )
+
+    scope = request.GET.get('scope', request.POST.get('scope', 'manuscript'))
     
     document_title = document.title
     
@@ -305,7 +316,7 @@ def document_delete(request, document_id):
     document.delete()
     
     messages.success(request, f'Documento "{document_title}" eliminado correctamente.')
-    return redirect('documents:list')
+    return redirect(f"{reverse('documents:list')}?scope={scope}")
 
 
 @login_required
@@ -329,7 +340,7 @@ def reindex_document(request, document_id):
         
         if not chunks.exists():
             messages.error(request, 'El documento no tiene chunks para indexar.')
-            return redirect('documents:detail', document_id=document_id)
+            return redirect(f"{reverse('documents:detail', args=[document_id])}?scope={request.POST.get('scope', 'manuscript')}")
         
         # Preparar datos
         processor = DocumentProcessor()
@@ -377,4 +388,4 @@ def reindex_document(request, document_id):
     except Exception as e:
         messages.error(request, f'Error al re-indexar: {str(e)}')
     
-    return redirect('documents:detail', document_id=document_id)
+    return redirect(f"{reverse('documents:detail', args=[document_id])}?scope={request.POST.get('scope', 'manuscript')}")
