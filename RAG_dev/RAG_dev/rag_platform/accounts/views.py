@@ -4,6 +4,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.views.decorators.http import require_http_methods
 from .models import User
+from rag_platform.documents.models import Document
+from rag_platform.chat.models import Conversation
 
 
 def landing(request):
@@ -11,8 +13,25 @@ def landing(request):
     Landing page principal con información del sistema RAG
     """
     if request.user.is_authenticated:
-        return redirect('chat:dashboard')
+        return redirect('accounts:workspace_menu')
     return render(request, 'accounts/landing.html')
+
+
+@login_required
+def workspace_menu(request):
+    """
+    Menú principal para elegir entre flujos de trabajo.
+    """
+    total_documents = Document.objects.filter(user=request.user).count()
+    completed_documents = Document.objects.filter(user=request.user, status='completed').count()
+    total_conversations = Conversation.objects.filter(user=request.user, is_active=True).count()
+
+    context = {
+        'total_documents': total_documents,
+        'completed_documents': completed_documents,
+        'total_conversations': total_conversations,
+    }
+    return render(request, 'accounts/workspace_menu.html', context)
 
 
 @require_http_methods(["GET", "POST"])
@@ -21,7 +40,7 @@ def login_view(request):
     Vista de login con validación
     """
     if request.user.is_authenticated:
-        return redirect('chat:dashboard')
+        return redirect('accounts:workspace_menu')
     
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -32,7 +51,7 @@ def login_view(request):
         if user is not None:
             login(request, user)
             messages.success(request, f'¡Bienvenido de nuevo, {user.username}!')
-            return redirect('chat:dashboard')
+            return redirect('accounts:workspace_menu')
         else:
             messages.error(request, 'Usuario o contraseña incorrectos.')
     
@@ -45,7 +64,7 @@ def register_view(request):
     Vista de registro de nuevos usuarios
     """
     if request.user.is_authenticated:
-        return redirect('chat:dashboard')
+        return redirect('accounts:workspace_menu')
     
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -79,7 +98,7 @@ def register_view(request):
         
         login(request, user)
         messages.success(request, f'¡Cuenta creada exitosamente! Bienvenido, {username}.')
-        return redirect('chat:dashboard')
+        return redirect('accounts:workspace_menu')
     
     return render(request, 'accounts/register.html')
 

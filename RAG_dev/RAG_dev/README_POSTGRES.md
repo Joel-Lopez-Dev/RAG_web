@@ -22,12 +22,26 @@ docker ps
 
 En tu archivo .env (raiz del proyecto), usa estas variables:
 
+DEBUG=False
+DJANGO_SECRET_KEY=CAMBIA_ESTA_CLAVE
+ALLOWED_HOSTS=127.0.0.1,localhost
 USE_SQLITE=False
 DB_NAME=rag_platform_db
 DB_USER=postgres
 DB_PASSWORD=postgres
 DB_HOST=127.0.0.1
 DB_PORT=5433
+OPENAI_API_KEY=
+GOOGLE_API_KEY=
+NEO4J_URI=bolt://127.0.0.1:7687
+NEO4J_USER=neo4j
+NEO4J_PASSWORD=neo4jpassword
+
+Si es un servidor interno temporal sin HTTPS, agrega tambien:
+
+SECURE_SSL_REDIRECT=False
+SESSION_COOKIE_SECURE=False
+CSRF_COOKIE_SECURE=False
 
 Nota: si Django corre dentro de otro contenedor del mismo compose, DB_HOST deberia ser postgres.
 

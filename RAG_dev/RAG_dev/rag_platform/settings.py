@@ -12,13 +12,24 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Cargar variables de entorno
 load_dotenv(os.path.join(BASE_DIR, '.env'))
 
+
+def env_bool(name, default=False):
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in ('1', 'true', 'yes', 'on')
+
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-change-this-in-production')
+SECRET_KEY = (
+    os.getenv('DJANGO_SECRET_KEY')
+    or os.getenv('SECRET_KEY')
+    or 'django-insecure-change-this-in-production'
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'False') == 'True'
+DEBUG = env_bool('DEBUG', False)
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = [h.strip() for h in os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',') if h.strip()]
 
 # Application definition
 INSTALLED_APPS = [
@@ -33,6 +44,7 @@ INSTALLED_APPS = [
     'rag_platform.accounts',
     'rag_platform.chat',
     'rag_platform.documents',
+    'rag_platform.manuscript',
     'rag_platform.core',
 ]
 
@@ -120,14 +132,15 @@ AUTH_USER_MODEL = 'accounts.User'
 
 # Authentication
 LOGIN_URL = 'accounts:login'
-LOGIN_REDIRECT_URL = 'chat:dashboard'
+LOGIN_REDIRECT_URL = 'accounts:workspace_menu'
 LOGOUT_REDIRECT_URL = 'accounts:landing'
 
 # Security Settings (Production)
 if not DEBUG:
-    SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
+    # Se pueden desactivar temporalmente en un servidor interno sin HTTPS.
+    SECURE_SSL_REDIRECT = env_bool('SECURE_SSL_REDIRECT', True)
+    SESSION_COOKIE_SECURE = env_bool('SESSION_COOKIE_SECURE', True)
+    CSRF_COOKIE_SECURE = env_bool('CSRF_COOKIE_SECURE', True)
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
@@ -136,7 +149,7 @@ if not DEBUG:
 LLM_PROVIDER = os.getenv('LLM_PROVIDER', 'none')  # 'openai' | 'gemini' | 'none'
 
 # API Keys
-GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
+GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY') or os.getenv('GEMINI_API_KEY')
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 # Model names (configurables)

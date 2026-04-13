@@ -88,14 +88,132 @@
     html:not(.dark) .sidebar-item:hover {
         background: rgba(10, 61, 102, 0.06);
     }
+
+    /* Responsive layout para móviles */
+    @media (max-width: 768px) {
+        .chat-shell {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            height: auto;
+            max-height: none;
+            min-height: calc(100vh - 120px);
+        }
+        
+        .chat-sidebar {
+            max-height: 35vh;
+            flex-shrink: 0;
+        }
+        
+        .chat-main {
+            flex: 1;
+            min-height: 45vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #messages-container {
+            flex: 1 !important;
+            min-height: 20vh;
+            overflow-y: auto;
+        }
+
+        .messages-empty {
+            padding: 1.5rem 1rem !important;
+        }
+
+        .messages-empty i {
+            font-size: 3rem !important;
+        }
+
+        .chat-header {
+            padding: 0.75rem !important;
+        }
+
+        .chat-input {
+            padding: 1rem !important;
+        }
+    }
+
+    @media (min-width: 769px) {
+        .chat-shell {
+            height: calc(100vh - 180px);
+            display: grid;
+        }
+    }
+
+    /* Scrollbar personalizado para móviles */
+    #conversations-list {
+        scrollbar-width: auto;
+        scrollbar-color: rgba(10, 61, 102, 0.5) rgba(10, 61, 102, 0.1);
+    }
+
+    #conversations-list::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    #conversations-list::-webkit-scrollbar-track {
+        background: rgba(10, 61, 102, 0.1);
+        border-radius: 10px;
+    }
+
+    #conversations-list::-webkit-scrollbar-thumb {
+        background: rgba(10, 61, 102, 0.5);
+        border-radius: 10px;
+    }
+
+    #conversations-list::-webkit-scrollbar-thumb:hover {
+        background: rgba(10, 61, 102, 0.7);
+    }
+
+    @media (max-width: 768px) {
+        #conversations-list {
+            scrollbar-width: auto;
+            scrollbar-color: rgba(10, 61, 102, 0.6) rgba(10, 61, 102, 0.15);
+        }
+
+        #conversations-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #conversations-list::-webkit-scrollbar-track {
+            background: rgba(10, 61, 102, 0.15);
+            border-radius: 10px;
+        }
+
+        #conversations-list::-webkit-scrollbar-thumb {
+            background: rgba(10, 61, 102, 0.6);
+            border-radius: 10px;
+        }
+
+        #conversations-list::-webkit-scrollbar-thumb:hover {
+            background: rgba(10, 61, 102, 0.8);
+        }
+    }
+
+    html.dark #conversations-list {
+        scrollbar-color: rgba(71, 85, 105, 0.6) rgba(71, 85, 105, 0.15);
+    }
+
+    html.dark #conversations-list::-webkit-scrollbar-track {
+        background: rgba(71, 85, 105, 0.15);
+    }
+
+    html.dark #conversations-list::-webkit-scrollbar-thumb {
+        background: rgba(71, 85, 105, 0.6);
+    }
+
+    html.dark #conversations-list::-webkit-scrollbar-thumb:hover {
+        background: rgba(71, 85, 105, 0.8);
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="grid grid-cols-12 gap-6 chat-shell rounded-2xl p-4 md:p-5" style="height: calc(100vh - 180px);">
+<div class="grid grid-cols-12 gap-3 md:gap-6 chat-shell rounded-2xl p-3 md:p-5">
     
     <!-- Sidebar - Historial de conversaciones -->
-    <div class="col-span-12 md:col-span-3 chat-sidebar rounded-xl p-4 flex flex-col overflow-hidden">
+    <div class="col-span-12 md:col-span-3 chat-sidebar rounded-xl p-3 md:p-4 flex flex-col overflow-hidden">
         <div class="mb-4">
             <button 
                 id="new-conversation-btn"
@@ -147,34 +265,34 @@
     <div class="col-span-12 md:col-span-9 chat-main rounded-xl flex flex-col overflow-hidden">
         
         <!-- Chat Header -->
-        <div class="chat-header p-4 flex-shrink-0">
-            <div class="flex items-center justify-between flex-wrap gap-4">
+        <div class="chat-header p-3 sm:p-4 flex-shrink-0">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
-                    <h2 id="chat-title" class="chat-title text-xl font-bold text-gray-900 dark:text-gray-100">
+                    <h2 id="chat-title" class="chat-title text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">
                         <i class="fas fa-comments text-blue-700 mr-2"></i>
                         Nueva Conversación
                     </h2>
-                    <p id="chat-subtitle" class="chat-subtitle text-sm text-gray-500 dark:text-gray-400">Configura y envía tu primer mensaje</p>
+                    <p id="chat-subtitle" class="chat-subtitle text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">Configura y envía tu primer mensaje</p>
                 </div>
                 
                 <!-- Selectores -->
-                <div id="selectors-container" class="flex items-center space-x-4 flex-wrap gap-2">
-                    <div class="flex items-center space-x-2">
-                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Motor:</label>
+                <div id="selectors-container" class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                        <label class="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Motor:</label>
                         <select 
                             id="engine-selector"
-                            class="selector px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                            class="selector px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 text-xs sm:text-sm w-full sm:w-auto"
                         >
                             <option value="faiss">Naive</option>
                             <option value="neo4j">Graph</option>
                         </select>
                     </div>
                     
-                    <div class="flex items-center space-x-2">
-                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Modelo:</label>
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                        <label class="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Modelo:</label>
                         <select 
                             id="llm-selector"
-                            class="selector px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                            class="selector px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 text-xs sm:text-sm w-full sm:w-auto"
                         >
                             <option value="">Por defecto</option>
                             <option value="openai">OpenAI</option>
@@ -183,11 +301,11 @@
                         </select>
                     </div>
                     
-                    <div class="flex items-center space-x-2">
-                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Doc:</label>
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                        <label class="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Doc:</label>
                         <select 
                             id="document-selector"
-                            class="selector px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                            class="selector px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 text-xs sm:text-sm w-full sm:w-auto"
                         >
                             <option value="">Todos</option>
                             {% for doc in documents %}

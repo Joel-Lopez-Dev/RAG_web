@@ -10,6 +10,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('rag_platform.accounts.urls')),
     path('chat/', include('rag_platform.chat.urls')),
+    path('manuscript/', include('rag_platform.manuscript.urls')),
     path('documents/', include('rag_platform.documents.urls')),
 ]
 

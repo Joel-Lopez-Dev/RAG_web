@@ -30,11 +30,16 @@ pip install -r requirements.txt
 ```
 
 ## 4) Variables y configuracion sensible
-- [ ] Configurar `SECRET_KEY`.
+- [ ] Configurar `DJANGO_SECRET_KEY` (o `SECRET_KEY` como alias).
+- [ ] Forzar PostgreSQL para servidor: `USE_SQLITE=False`.
 - [ ] Configurar credenciales de base de datos (si no se usa SQLite).
-- [ ] Configurar API keys de proveedores LLM (OpenAI/Gemini).
+- [ ] Configurar API keys de proveedores LLM (`OPENAI_API_KEY` y `GOOGLE_API_KEY`; `GEMINI_API_KEY` es alias compatible).
 - [ ] Configurar parametros de Neo4j (`URI`, `USER`, `PASSWORD`).
 - [ ] Verificar `ALLOWED_HOSTS` y `DEBUG=False` en produccion.
+- [ ] Si no hay HTTPS aun (servidor interno temporal), definir:
+	- `SECURE_SSL_REDIRECT=False`
+	- `SESSION_COOKIE_SECURE=False`
+	- `CSRF_COOKIE_SECURE=False`
 
 ## 5) Base de datos y migraciones
 - [ ] Ejecutar migraciones:
@@ -74,6 +79,7 @@ python manage.py collectstatic --noinput
 
 ## 10) Seguridad y operacion
 - [ ] Confirmar que no hay secretos en el repo.
+- [ ] Ejecutar `python manage.py check --deploy` y resolver advertencias relevantes.
 - [ ] Habilitar logs de app y de servidor web.
 - [ ] Definir politica de backup (DB + media + configuraciones).
 - [ ] Probar restauracion de backup.

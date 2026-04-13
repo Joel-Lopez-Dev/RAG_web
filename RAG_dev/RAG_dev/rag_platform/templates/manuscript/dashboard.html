@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% block title %}Analiza tu manuscrito - RAG Platform{% endblock %}
+
+{% block main_class %}max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4{% endblock %}
+
+{% block extra_css %}
+<style>
+    html:not(.dark) body {
+        background:
+            radial-gradient(circle at top left, rgba(5, 150, 105, 0.08), transparent 28%),
+            radial-gradient(circle at top right, rgba(14, 116, 144, 0.09), transparent 30%),
+            linear-gradient(180deg, #f5fbfa 0%, #ebf7f6 100%);
+    }
+
+    html:not(.dark) .manuscript-shell {
+        background: linear-gradient(180deg, #ffffff 0%, #f2faf8 100%);
+        border: 1px solid rgba(5, 150, 105, 0.12);
+        box-shadow: 0 18px 40px rgba(15, 118, 110, 0.10);
+    }
+
+    html:not(.dark) .manuscript-sidebar,
+    html:not(.dark) .manuscript-main {
+        background: linear-gradient(180deg, #ffffff 0%, #f7fcfb 100%);
+        border: 1px solid rgba(5, 150, 105, 0.10);
+        box-shadow: 0 14px 32px rgba(15, 118, 110, 0.09);
+    }
+
+    html:not(.dark) .manuscript-header {
+        background: linear-gradient(90deg, rgba(5, 150, 105, 0.06) 0%, rgba(14, 116, 144, 0.06) 100%);
+        border-bottom: 1px solid rgba(5, 150, 105, 0.12);
+    }
+
+    html:not(.dark) .doc-item.active {
+        background: linear-gradient(90deg, rgba(5, 150, 105, 0.12) 0%, rgba(14, 116, 144, 0.08) 100%);
+        border-left: 4px solid #059669;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-12 gap-6 manuscript-shell rounded-2xl p-4 md:p-5" style="height: calc(100vh - 180px);">
+
+    <aside class="col-span-12 md:col-span-4 lg:col-span-3 manuscript-sidebar rounded-xl p-4 flex flex-col overflow-hidden">
+        <div class="mb-4 grid grid-cols-1 gap-2">
+            <a href="{% url 'manuscript:upload' %}" class="w-full inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-200 shadow-md">
+                <i class="fas fa-upload mr-2"></i> Subir documento
+            </a>
+            <a href="{% url 'documents:list' %}?scope=manuscript" class="w-full inline-flex items-center justify-center bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-900 dark:text-slate-100 font-semibold py-2.5 px-4 rounded-lg transition duration-200">
+                <i class="fas fa-folder-open mr-2"></i> Ver todos
+            </a>
+        </div>
+
+        <div class="mb-3">
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase">
+                <i class="fas fa-file-pdf mr-1"></i> Mis PDFs
+            </h3>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Solo se muestran tus PDFs.</p>
+        </div>
+
+        <div class="space-y-2 overflow-y-auto flex-1">
+            {% for doc in documents %}
+            <a href="{{ doc.file.url }}" target="_blank" rel="noopener" class="block doc-item p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition duration-200 {% if selected_document and selected_document.id == doc.id %}active{% endif %}" title="Abrir PDF">
+                <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{{ doc.title }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ doc.get_filename }}</p>
+                <div class="mt-2 flex items-center justify-between">
+                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ doc.get_file_size_mb }} MB</span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ doc.created_at|date:"d/m/Y" }}</span>
+                </div>
+            </a>
+            {% empty %}
+            <div class="text-sm text-gray-500 dark:text-gray-400 text-center py-6">
+                Aun no has subido documentos.
+            </div>
+            {% endfor %}
+        </div>
+    </aside>
+
+    <section class="col-span-12 md:col-span-8 lg:col-span-9 manuscript-main rounded-xl flex flex-col overflow-hidden">
+        <header class="manuscript-header p-3 sm:p-4">
+            <div class="flex flex-col gap-2">
+                <div>
+                    <h2 class="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">
+                        <i class="fas fa-feather-alt text-emerald-600 mr-2"></i>
+                        Analiza tu manuscrito
+                    </h2>
+                    <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">Panel de trabajo con tus PDFs personales.</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="p-3 sm:p-5 overflow-y-auto flex-1 space-y-4 sm:space-y-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+                <div class="rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+                    <p class="text-sm text-gray-500 dark:text-gray-400">PDFs totales</p>
+                    <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ total_documents }}</p>
+                </div>
+                <div class="rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Tamano total</p>
+                    <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ total_size_mb }} MB</p>
+                </div>
+                <div class="rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Ultimo PDF</p>
+                    <p class="text-base font-bold text-gray-900 dark:text-gray-100 truncate">
+                        {% if latest_document %}{{ latest_document.title }}{% else %}Sin registros{% endif %}
+                    </p>
+                </div>
+            </div>
+
+            {% if selected_document %}
+            <div class="rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">Documento seleccionado</h3>
+                <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <p class="text-gray-500 dark:text-gray-400">Titulo</p>
+                        <p class="font-semibold text-gray-900 dark:text-gray-100">{{ selected_document.title }}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 dark:text-gray-400">Archivo</p>
+                        <p class="font-semibold text-gray-900 dark:text-gray-100">{{ selected_document.get_filename }}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 dark:text-gray-400">Tamano</p>
+                        <p class="font-semibold text-gray-900 dark:text-gray-100">{{ selected_document.get_file_size_mb }} MB</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 dark:text-gray-400">Fecha de subida</p>
+                        <p class="font-semibold text-gray-900 dark:text-gray-100">{{ selected_document.created_at|date:"d/m/Y H:i" }}</p>
+                    </div>
+                </div>
+
+                <div class="mt-5 flex flex-wrap gap-3">
+                    <a href="{{ selected_document.file.url }}" target="_blank" rel="noopener" class="inline-flex items-center px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition">
+                        <i class="fas fa-file-pdf mr-2"></i> Abrir PDF
+                    </a>
+                    <a href="{% url 'documents:list' %}?scope=manuscript" class="inline-flex items-center px-4 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-900 dark:text-slate-100 text-sm font-semibold transition">
+                        <i class="fas fa-folder-open mr-2"></i> Ver biblioteca
+                    </a>
+                </div>
+            </div>
+
+            <div class="rounded-xl border border-dashed border-emerald-300 dark:border-emerald-800 bg-emerald-50/60 dark:bg-emerald-900/10 p-5">
+                <h4 class="font-semibold text-emerald-800 dark:text-emerald-300">Zona de analisis</h4>
+                <p class="text-sm text-emerald-700 dark:text-emerald-400 mt-2">Este espacio queda listo para tu implementacion de analisis de manuscritos usando el PDF seleccionado.</p>
+            </div>
+            {% else %}
+            <div class="rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-8 text-center">
+                <i class="fas fa-file-upload text-5xl text-gray-300 dark:text-slate-600"></i>
+                <p class="mt-4 text-lg text-gray-700 dark:text-gray-300">No hay PDFs para analizar</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Sube un PDF y se mostrara en tu panel personal.</p>
+                <a href="{% url 'manuscript:upload' %}" class="mt-4 inline-flex items-center px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition">
+                    <i class="fas fa-upload mr-2"></i> Subir documento
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+</div>
+{% endblock %}

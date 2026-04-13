@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}RAG Platform{% endblock %}</title>
-    <link rel="icon" type="image/png" href="{% static 'images/cuaed.png' %}">
-    <link rel="shortcut icon" type="image/png" href="{% static 'images/cuaed.png' %}">
+    <link rel="icon" type="image/png" href="{% static 'images/ESIA-logo.png' %}">
+    <link rel="shortcut icon" type="image/png" href="{% static 'images/ESIA-logo.png' %}">
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -71,21 +71,48 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <a href="{% url 'chat:dashboard' %}" class="flex items-center group">
+                    <a href="{% url 'accounts:workspace_menu' %}" class="flex items-center group">
                         <img src="{% static 'images/cuaed.png' %}" alt="CUAED" class="h-8 w-auto mr-2 object-contain group-hover:opacity-90 transition">
                         <span class="text-xl font-bold text-white">RAG Platform</span>
                     </a>
+                    {% url 'manuscript:dashboard' as manuscript_dashboard_url %}
+                    {% block navbar_links %}
+                    <!-- Desktop Menu -->
                     <div class="hidden md:flex ml-10 space-x-1">
+                        <a href="{% url 'accounts:workspace_menu' %}" class="text-gray-300 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg text-sm font-medium transition">
+                            <i class="fas fa-th-large mr-1"></i> Menu
+                        </a>
+                        {% if request.path|slice:":6" == '/chat/' or request.GET.scope == 'chat' %}
                         <a href="{% url 'chat:dashboard' %}" class="text-gray-300 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg text-sm font-medium transition">
                             <i class="fas fa-comments mr-1"></i> Chat
                         </a>
-                        <a href="{% url 'documents:list' %}" class="text-gray-300 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg text-sm font-medium transition">
+                        {% endif %}
+                        {% if request.path|slice:":6" != '/chat/' and request.GET.scope != 'chat' %}
+                        <a href="{% firstof manuscript_dashboard_url '/manuscript/' %}" class="text-gray-300 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg text-sm font-medium transition">
+                            <i class="fas fa-feather-alt mr-1"></i> Manuscrito
+                        </a>
+                        {% endif %}
+                        {% if request.path|slice:":6" == '/chat/' or request.GET.scope == 'chat' %}
+                        <a href="{% url 'documents:list' %}?scope=chat" class="text-gray-300 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg text-sm font-medium transition">
                             <i class="fas fa-file-pdf mr-1"></i> Mis Documentos
                         </a>
+                        {% else %}
+                        <a href="{% url 'documents:list' %}?scope=manuscript" class="text-gray-300 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg text-sm font-medium transition">
+                            <i class="fas fa-file-pdf mr-1"></i> Mis Documentos
+                        </a>
+                        {% endif %}
+                        {% if request.path|slice:":6" == '/chat/' or request.GET.scope == 'chat' %}
                         <a href="{% url 'chat:history' %}" class="text-gray-300 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg text-sm font-medium transition">
                             <i class="fas fa-history mr-1"></i> Historial
                         </a>
+                        {% endif %}
                     </div>
+
+                    <!-- Mobile Menu Button -->
+                    <button id="mobile-menu-btn" class="md:hidden ml-auto p-2 rounded-lg text-gray-300 hover:text-white hover:bg-white/10 transition">
+                        <i class="fas fa-bars text-lg"></i>
+                    </button>
+                    {% endblock %}
                 </div>
                 <div class="flex items-center space-x-3">
                     <!-- Dark Mode Toggle -->
@@ -122,8 +149,43 @@
             </div>
         </div>
     </nav>
+    
+    <!-- Mobile Menu Dropdown -->
+    <div id="mobile-menu-dropdown" class="hidden md:hidden bg-slate-800 border-b border-white/10 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 space-y-2">
+            {% url 'manuscript:dashboard' as manuscript_dashboard_url %}
+            <a href="{% url 'accounts:workspace_menu' %}" class="block px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-white/10 text-sm font-medium transition" onclick="closeMobileMenu()">
+                <i class="fas fa-th-large mr-2"></i> Menu
+            </a>
+            {% if request.path|slice:":6" == '/chat/' or request.GET.scope == 'chat' %}
+            <a href="{% url 'chat:dashboard' %}" class="block px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-white/10 text-sm font-medium transition" onclick="closeMobileMenu()">
+                <i class="fas fa-comments mr-2"></i> Chat
+            </a>
+            {% endif %}
+            {% if request.path|slice:":6" != '/chat/' and request.GET.scope != 'chat' %}
+            <a href="{% firstof manuscript_dashboard_url '/manuscript/' %}" class="block px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-white/10 text-sm font-medium transition" onclick="closeMobileMenu()">
+                <i class="fas fa-feather-alt mr-2"></i> Manuscrito
+            </a>
+            {% endif %}
+            {% if request.path|slice:":6" == '/chat/' or request.GET.scope == 'chat' %}
+            <a href="{% url 'documents:list' %}?scope=chat" class="block px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-white/10 text-sm font-medium transition" onclick="closeMobileMenu()">
+                <i class="fas fa-file-pdf mr-2"></i> Mis Documentos
+            </a>
+            {% else %}
+            <a href="{% url 'documents:list' %}?scope=manuscript" class="block px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-white/10 text-sm font-medium transition" onclick="closeMobileMenu()">
+                <i class="fas fa-file-pdf mr-2"></i> Mis Documentos
+            </a>
+            {% endif %}
+            {% if request.path|slice:":6" == '/chat/' or request.GET.scope == 'chat' %}
+            <a href="{% url 'chat:history' %}" class="block px-3 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-white/10 text-sm font-medium transition" onclick="closeMobileMenu()">
+                <i class="fas fa-history mr-2"></i> Historial
+            </a>
+            {% endif %}
+        </div>
+    </div>
     {% endif %}
     
+    {% block global_messages %}
     <!-- Messages -->
     {% if messages %}
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
@@ -144,6 +206,7 @@
         {% endfor %}
     </div>
     {% endif %}
+    {% endblock %}
     
     <!-- Main Content -->
     <main class="{% block main_class %}max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8{% endblock %} flex-1">
@@ -220,6 +283,36 @@
                 setTimeout(() => msg.remove(), 500);
             });
         }, 5000);
+
+        // ===== Mobile Menu Toggle =====
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenuDropdown = document.getElementById('mobile-menu-dropdown');
+
+        function toggleMobileMenu() {
+            if (mobileMenuDropdown) {
+                mobileMenuDropdown.classList.toggle('hidden');
+            }
+        }
+
+        function closeMobileMenu() {
+            if (mobileMenuDropdown) {
+                mobileMenuDropdown.classList.add('hidden');
+            }
+        }
+
+        if (mobileMenuBtn) {
+            mobileMenuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleMobileMenu();
+            });
+        }
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (mobileMenuDropdown && !mobileMenuDropdown.contains(e.target) && !mobileMenuBtn?.contains(e.target)) {
+                closeMobileMenu();
+            }
+        });
     </script>
     
     {% block extra_js %}{% endblock %}

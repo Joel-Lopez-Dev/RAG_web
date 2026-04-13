@@ -5,6 +5,7 @@ from django.views.decorators.http import require_http_methods
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import transaction
+from django.db.models import Q
 import os
 from datetime import datetime
 
@@ -18,11 +19,32 @@ from django.conf import settings
 @login_required
 def document_list(request):
     """
-    Lista todos los documentos del usuario
+    Lista documentos por flujo (chat/manuscript) del usuario
     """
-    documents = Document.objects.filter(
-        user=request.user
-    ).order_by('-created_at')
+    scope = request.GET.get('scope', 'chat')
+
+    documents = Document.objects.filter(user=request.user)
+
+    if scope == 'manuscript':
+        # Flujo de manuscrito: solo biblioteca de PDFs del usuario.
+        documents = documents.filter(file_type='pdf')
+        list_title = 'Mis PDFs'
+        list_subtitle = 'Biblioteca del módulo Analiza tu manuscrito.'
+        template_name = 'documents/document_list.html'
+    else:
+        # Flujo de chat/RAG: excluir PDFs de manuscrito sin procesamiento RAG.
+        documents = documents.filter(
+            Q(total_chunks__gt=0)
+            | Q(indexed_in_faiss=True)
+            | Q(indexed_in_neo4j=True)
+            | Q(file_type='txt')
+            | Q(status__in=['processing', 'failed'])
+        )
+        list_title = 'Mis Documentos'
+        list_subtitle = 'Documentos disponibles para el flujo de conversación con RAG.'
+        template_name = 'documents/document_list_chat.html'
+
+    documents = documents.order_by('-created_at')
     
     # Filtros
     status_filter = request.GET.get('status')
@@ -37,9 +59,12 @@ def document_list(request):
     context = {
         'page_obj': page_obj,
         'status_filter': status_filter,
+        'scope': scope,
+        'list_title': list_title,
+        'list_subtitle': list_subtitle,
     }
     
-    return render(request, 'documents/document_list.html', context)
+    return render(request, template_name, context)
 
 
 @login_required
